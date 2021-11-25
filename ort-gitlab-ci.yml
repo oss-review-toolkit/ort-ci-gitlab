@@ -1,0 +1,97 @@
+ort-scan:
+  image: alpine
+  stage: ort-scan
+  interruptible: true
+  variables:
+    ORT_PROJECT_ID: 28931439
+  before_script:
+    - apk add curl jq
+  script:
+    - |
+      OSS_CI_REVISION=${OSS_CI_REVISION:-main}
+      ORT_DOCKER_IMAGE=${ORT_DOCKER_IMAGE:-"${CI_REGISTRY_IMAGE}/ort-custom:latest"}
+      resp=$(
+        curl -fksSL --request POST \
+          --form "token=${ORT_TRIGGER_API_TOKEN}" \
+          --form "variables[SW_NAME]=$ORT_SW_NAME" \
+          --form "variables[SW_VERSION]=$SW_VERSION" \
+          --form "variables[VCS_URL]=$VCS_URL" \
+          --form "variables[ORT_CONFIG_FILE]=$ORT_CONFIG_FILE" \
+          --form "variables[ORT_ALLOW_DYNAMIC_VERSIONS]=$ORT_ALLOW_DYNAMIC_VERSIONS" \
+          --form "variables[DISABLE_SHALLOW_CLONE]=$DISABLE_SHALLOW_CLONE" \
+          --form "variables[FAIL_ON_OUTDATED_NOTICE_FILE]=$FAIL_ON_OUTDATED_NOTICE_FILE" \
+          --form "variables[ORT_DISABLE_EVALUATOR]=$ORT_DISABLE_EVALUATOR" \
+          --form "variables[ORT_DISABLE_SCANNER]=$ORT_DISABLE_SCANNER" \
+          --form "variables[ORT_DOCKER_IMAGE]=$ORT_DOCKER_IMAGE" \
+          --form "variables[NOTICE_FILE]=$NOTICE_FILE" \
+          --form "variables[UPSTREAM_BRANCH]=$CI_COMMIT_REF_NAME" \
+          --form "variables[UPSTREAM_PROJECT_ID]=$CI_PROJECT_ID" \
+          --form "variables[UPSTREAM_PROJECT_PATH]=$CI_PROJECT_PATH" \
+          --form "variables[UPSTREAM_PROJECT_REPOSITORY_LANGUAGES]=$CI_PROJECT_REPOSITORY_LANGUAGES" \
+          --form "variables[UPSTREAM_PROJECT_TITLE]=$CI_PROJECT_TITLE" \
+          --form "variables[UPSTREAM_USER_LOGIN]=$GITLAB_USER_LOGIN" \
+          --form "variables[UPSTREAM_PROJECT_URL]=$CI_PROJECT_URL" \
+          --form "variables[UPSTREAM_REPOSITORY_URL]=$CI_REPOSITORY_URL" \
+          --form "variables[UPSTREAM_COMMIT_SHA]=$CI_COMMIT_SHA" \
+          --form "variables[UPSTREAM_MERGE_REQUEST_IID]=$CI_MERGE_REQUEST_IID" \
+          --form "variables[UPSTREAM_PIPELINE_URL]=$CI_PIPELINE_URL" \
+          --form "variables[DEPENDENT_ON_JOB_ID]=$DEPENDENT_ON_JOB_ID" \
+          --form "ref=${OSS_CI_REVISION}" ${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/trigger/pipeline \
+      )
+      PIPELINE_ID=$(echo $resp | jq -r '.id')
+      web_url=$(echo $resp | jq -r '.web_url')
+      OSS_RETRY=${OSS_RETRY:-180} # Number of retries
+      OSS_RETRY_DELAY=${OSS_RETRY_DELAY:-10} # How long each retry will take
+      echo "Waiting for pipeline $web_url ..."
+      # Wait 30 mins (10 seconds x 180 times) by default
+      for retry in $(seq 1 $OSS_RETRY); do
+        status=$(curl -sS -H "PRIVATE-TOKEN:$ORT_READ_API_TOKEN" "${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/pipelines/${PIPELINE_ID}" | jq -r '.status')
+        echo "Got pipeline status $status, retry $retry/$OSS_RETRY"
+        [[ $status == "success" || $status == "failed" || $status == "canceled" ]] && break
+        sleep $OSS_RETRY_DELAY
+      done
+
+      [[ $status != "success" && $status != "failed" ]] && { echo "$web_url has status $status. Failing by timeout."; exit 1; }
+
+      # Fetch id of latest finished job in this pipeline
+      JOB_ID=$(curl -sS -H "PRIVATE-TOKEN:$ORT_READ_API_TOKEN" "${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/pipelines/${PIPELINE_ID}/jobs?scope[]=${status}&per_page=${PER_PAGE:-50}" | jq 'sort_by(.finished_at)[-1].id')
+      echo "Downloading artifacts from ${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/jobs/$JOB_ID/artifacts"
+      curl -fksSL -o ort_artifacts.zip -H "PRIVATE-TOKEN:$ORT_READ_API_TOKEN" "${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/jobs/$JOB_ID/artifacts" || \
+        { echo -e "Can't download artifacts from ${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/jobs/$JOB_ID/artifacts\nPlease check logs at $web_url"; exit 1; }
+      unzip -q ort_artifacts.zip
+
+    - |
+      if [[ $status != "success" ]]; then
+        echo "$web_url has status $status, failing"
+        exit 1
+      fi
+  needs: []
+  artifacts:
+    when: always
+    expose_as: "ORT Scan Reports"
+    paths:
+      - ort-results/scan-report-web-app.html
+      - ort-results
+
+
+# # The 'nice' way of triggering downstream pipeline is commented out
+# # because it's not possible to retrieve back artifacts this way.
+# ort-scan:
+#   stage: ort-scan
+#   interruptible: true
+#   variables:
+#     UPSTREAM_BRANCH: $CI_COMMIT_REF_NAME
+#     UPSTREAM_PROJECT_PATH: $CI_PROJECT_PATH
+#     UPSTREAM_UNIQ_ID: $CI_PIPELINE_ID
+#     REQUESTED_BEFORE_SCRIPT: "ls"
+#   trigger:
+#     project: ${CI_PROJECT_NAMESPACE}/ort-gitlab-ci
+#     strategy: depend
+#   needs: []
+# # This is how artifacts should work:
+#   artifacts:
+#     paths:
+#       - project_to_scan
+# # But GitLab (Enterprise Edition 13.4.3-ee) can't fetch artifacts from downstream job to upstream defined by
+# # the "trigger" keyword. You will have yaml invalid for configuration above.
+# # Once it became available this configuration should be used instead of API approach.

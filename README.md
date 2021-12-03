@@ -16,12 +16,14 @@ Before you can use ORT for GitLab or its `ort-scan` job, you first need to:
   * Click the *Run pipeline* button
   * Wait until `ort-build-image` completes successfully
 3. Generate `ORT_TRIGGER_API_TOKEN`,  `ORT_READ_API_TOKEN` and `ORT_MR_API_TOKEN` access tokens to use ORT for GitLab in your project(s) pipelines:
-  * Create a [personal access token][gitlab-personal-access-tokens] token named `ORT_READ_API_TOKEN`, set role to 'developer' and enable scope 'read_api'
-  * Create a [personal access token][gitlab-personal-access-tokens] token named `ORT_MR_API_TOKEN`, set role to 'developer' and enable scope 'api'
-  * Create a new [trigger token][gitlab-trigger-token] named `ORT_TRIGGER_API_TOKEN`
+  * Create a [personal access token][gitlab-personal-access-tokens] for a bot/user with access to the `ort-gitlab-ci` repository with name `ORT_READ_API_TOKEN`, set role to 'developer' and enable scope 'read_api'
+  * Create a [personal access token][gitlab-personal-access-tokens] token for a bot/user with access to repositories you want to scan with name `ORT_MR_API_TOKEN`, set role to 'developer' and enable scope 'api'
+  * Create a new [trigger token][gitlab-trigger-token] named `ORT_TRIGGER_API_TOKEN`in your mirror of `ort-gitlab-ci` repository, navigate to *Settings > CI/CD* and expand [Pipeline triggers][gitlab-trigger-token]:
+    * Add trigger with as a description `ORT_TRIGGER_API_TOKEN`
+    * The value for `ORT_TRIGGER_API_TOKEN` will be shown in the table under the _Token_ column
   * Store the tokens somewhere safe
   * Add `ORT_TRIGGER_API_TOKEN` and `ORT_READ_API_TOKEN` as masked [variables][gitlab-variables] to the projects to be scanned or their parent group
-  * In your mirror of this repository, navigate to *Settings > CI/CD* and expand [Variables][gitlab-variables]:
+  * In your mirror of `ort-gitlab-ci` repository, navigate to *Settings > CI/CD* and expand [Variables][gitlab-variables]:
     * Add as a masked variable `ORT_MR_API_TOKEN` 
     * Add `ORT_MR_USERNAME` with as value the name user/bot for the author of scan results comment in a merge request
 

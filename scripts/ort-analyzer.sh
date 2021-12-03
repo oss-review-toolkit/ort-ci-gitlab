@@ -1,9 +1,19 @@
 #!/bin/bash -e
 
-if [ "$DISABLE_SHALLOW_CLONE" = "true" ] && [ "$VCS_TYPE" = "git" ]; then
-    echo "Unshallowing the cloned project..."
+if [ "$VCS_TYPE" = "git" ]; then
     pushd $PROJECT_DIR
-    git fetch --unshallow
+    if [ "$DISABLE_SHALLOW_CLONE" = "true" ]; then
+        echo "Unshallowing the cloned project..."
+        git fetch --unshallow
+    else
+        # Fetch tags for deepened commits
+        tags_list=$(mktemp)
+        refs_list=$(mktemp)
+        git ls-remote --tags > $tags_list
+        git log --pretty=format:"%H" > $refs_list
+        grep -Ff $refs_list $tags_list | awk '{print $2}' | sed 's/\^{}//' | xargs -r -I tag git fetch origin "tag:tag"
+        rm $refs_list $tags_list
+    fi
     popd
 fi
 

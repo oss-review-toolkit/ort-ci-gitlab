@@ -361,14 +361,12 @@ ort-build-image:
         ORT_REVISION=$(git rev-parse --short HEAD)
       fi
     - if [[ "$CI_DEFAULT_BRANCH" == "$CI_COMMIT_REF_NAME" ]]; then MAIN_TAG=latest; else MAIN_TAG="$CI_COMMIT_REF_NAME"; fi
-    - docker build --tag $CI_REGISTRY_IMAGE/ort:$ORT_REVISION --build-arg ORT_VERSION="$ORT_REVISION" --build-arg ORT_URL="$ORT_URL" -f ./Dockerfile .
-    - docker build --tag $CI_REGISTRY_IMAGE/ort:$MAIN_TAG --build-arg ORT_VERSION="$ORT_REVISION" --build-arg ORT_URL="$ORT_URL" -f ./Dockerfile .
+    - docker build --tag $CI_REGISTRY_IMAGE/ort:$ORT_REVISION --tag $CI_REGISTRY_IMAGE/ort:$MAIN_TAG --build-arg ORT_VERSION="$ORT_REVISION" --build-arg ORT_URL="$ORT_URL" -f ./Dockerfile .
     - docker push $CI_REGISTRY_IMAGE/ort:$ORT_REVISION
     - docker push $CI_REGISTRY_IMAGE/ort:$MAIN_TAG
     - cd ..
     - echo "Building the custom ORT docker image 'ort-custom'..."
-    - docker build --tag $CI_REGISTRY_IMAGE/ort-custom:$ORT_REVISION --build-arg ORT_DOCKER_IMAGE="${CI_REGISTRY_IMAGE}/ort:latest" -f ./Dockerfile .
-    - docker build --tag $CI_REGISTRY_IMAGE/ort-custom:$MAIN_TAG --build-arg ORT_DOCKER_IMAGE="${CI_REGISTRY_IMAGE}/ort:latest" -f ./Dockerfile .
+    - docker build --tag $CI_REGISTRY_IMAGE/ort-custom:$ORT_REVISION --tag $CI_REGISTRY_IMAGE/ort-custom:$MAIN_TAG --build-arg ORT_DOCKER_IMAGE="${CI_REGISTRY_IMAGE}/ort:latest" -f ./Dockerfile .
     - docker push $CI_REGISTRY_IMAGE/ort-custom:$ORT_REVISION
     - docker push $CI_REGISTRY_IMAGE/ort-custom:$MAIN_TAG
   rules:

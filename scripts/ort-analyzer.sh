@@ -33,6 +33,9 @@ else
   ANALYZER_INPUT_DIR="${PROJECT_DIR}${VCS_PATH:+/$VCS_PATH}"
 fi
 
+# Convert the LABELS variable with format "key1=val1, key1=val2" into separate ORT label options (-l).
+[[ -z "$LABELS" ]] || LABEL_OPTIONS=$(${CI_PROJECT_DIR}/scripts/labels.sh)
+
 echo "------------------------------------------"
 echo "Running ORT analyzer..."
 echo "------------------------------------------"
@@ -71,3 +74,4 @@ $ORT \
     -l UPSTREAM_PIPELINE_URL="$UPSTREAM_PIPELINE_URL" \
     -l CI_PIPELINE_URL="$CI_PIPELINE_URL" \
     -l CI_JOB_URL="$CI_JOB_URL"
+    $LABEL_OPTIONS

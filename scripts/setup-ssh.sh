@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+# Generates SSH configuration based on provided variables.
+
 mkdir -p ~/.ssh
 
 SSH_KEY_1_HOST=${SSH_KEY_1_HOST:-"example.com"}

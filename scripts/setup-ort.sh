@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+# Set up a specific revision of ORT.
+
 echo "Cloning the ORT revision: '$ORT_REVISION' from public repository: $ORT_URL ..."
 
 mkdir -p ort && cd ort

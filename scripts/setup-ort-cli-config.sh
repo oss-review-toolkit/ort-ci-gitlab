@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+# Create HOCON configuration file used by ORT.
+
 ORT_POSTGRES=$(cat <<-END
 postgresStorage {
   url = "$ORT_DB_URL"

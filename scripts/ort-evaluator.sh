@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Execute ORT's Evaluator to evaluate copyright, file, package and license findings
+# against customizable policy rules.
+
 if [[ "$ORT_DISABLE_SCANNER" = "true" ]]; then
     ORT_RESULTS_INPUT_FILE=$ORT_RESULTS_ANALYZER_FILE
 elif [[ "$ORT_DISABLE_ADVISOR" = "false" ]]; then

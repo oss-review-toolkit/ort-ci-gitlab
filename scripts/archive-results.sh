@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+# Compresses some of the ort-scan result files to save disk space and reduce file download times.
+
 declare -a files_to_compress=(
   "$ORT_RESULTS_ANALYZER_FILE"
   "$ORT_RESULTS_SCANNER_FILE"

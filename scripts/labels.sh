@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+# Converts the LABELS variable with format "key1=val1, key1=val2" into separate ORT label options (-l).
+
 # Remove square brackets and replace comma with newline
 LABELS_LIST="$(echo -e $LABELS | sed -e 's/[][]//g' -e 's/\, /\n/g')"
 

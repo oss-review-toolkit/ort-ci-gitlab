@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# Executes ORT's Analyzer to determines the dependencies of projects and their metadata,
+# abstracting which package managers or build systems are actually being used.
+
 if [ "$VCS_TYPE" = "git" ]; then
     pushd $PROJECT_DIR
     if [ "$DISABLE_SHALLOW_CLONE" = "true" ]; then

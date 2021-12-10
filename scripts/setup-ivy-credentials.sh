@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Creates an Ivy credentials file that enables authentication for access restricted binary repositories.
 # Ivy is mainly used by SBT projects for dependency resolution.
 

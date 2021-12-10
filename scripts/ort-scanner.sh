@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Executes ORT's Scanner which uses configured source code scanners to detect license / copyright findings.
+
 export JAVA_OPTS="-Xmx24G"
 
 echo "Scan source code for packages defined as dependencies and store results in $ORT_RESULTS_DIR."

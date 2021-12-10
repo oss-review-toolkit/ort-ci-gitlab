@@ -172,26 +172,23 @@ ort-scan:
     - export DISABLE_SHALLOW_CLONE=${DISABLE_SHALLOW_CLONE:-"false"}
     - export FAIL_ON_OUTDATED_NOTICE_FILE=${FAIL_ON_OUTDATED_NOTICE_FILE:-"false"}
     - export ORT_CONFIG_REVISION=${ORT_CONFIG_REVISION:-"main"}
+    - export ORT_CONFIG_REPO_SSH_URL=${ORT_CONFIG_REPO_SSH_URL:-"git@gitlab.com:${CI_PROJECT_NAMESPACE}/ort-configuration.git"}
     - export ORT_DISABLE_ADVISOR=${ORT_DISABLE_ADVISOR:-"false"}
     - export ORT_DISABLE_EVALUATOR=${ORT_DISABLE_EVALUATOR:-"false"}
     - export ORT_DISABLE_SCANNER=${ORT_DISABLE_SCANNER:-"true"}
     - export ORT_LOG_LEVEL=${ORT_LOG_LEVEL:-"performance"}
     - export ORT_USE_DEV_DB=${ORT_USE_DEV_DB:-"false"}
     - export NOTICE_FILE=${NOTICE_FILE:-"FOSS_NOTICE"}
-
-    # Save variable value to use it in after_script
-    - export VCS_URL=${VCS_URL:-"ssh://git@${CI_SERVER_HOST}/${UPSTREAM_PROJECT_PATH}"}
-    - export VCS_REVISION=${VCS_REVISION:-"$UPSTREAM_COMMIT_SHA"}
-    - echo "export VCS_URL='$VCS_URL'" >> vars.env
-    - echo "export VCS_REVISION='$VCS_REVISION'" >> vars.env
-
     - export SW_NAME=${SW_NAME:-"$UPSTREAM_PROJECT_TITLE"}
     - export SW_VERSION=${SW_VERSION:-"${VCS_REVISION:0:7}"}
+    - export VCS_URL=${VCS_URL:-"ssh://git@${CI_SERVER_HOST}/${UPSTREAM_PROJECT_PATH}"}
+    - export VCS_REVISION=${VCS_REVISION:-"$UPSTREAM_COMMIT_SHA"}
+
+    # Save variable values in vars.env so we can use them in after_script.
+    - echo "export VCS_URL='$VCS_URL'" >> vars.env
+    - echo "export VCS_REVISION='$VCS_REVISION'" >> vars.env
     - echo "export SW_NAME='$SW_NAME'" >> vars.env
     - echo "export SW_VERSION='$SW_VERSION'" >> vars.env
-
-    - export ORT_CONFIG_REPO_SSH_URL=${ORT_CONFIG_REPO_SSH_URL:-"git@gitlab.com:${CI_PROJECT_NAMESPACE}/ort-configuration.git"}
-
     - echo "export ORT_ALLOW_DYNAMIC_VERSIONS='$ORT_ALLOW_DYNAMIC_VERSIONS'" >> vars.env
     - echo "export ORT_CONFIG_REPO_SSH_URL='$ORT_CONFIG_REPO_SSH_URL'" >> vars.env
     - echo "export ORT_DISABLE_ADVISOR='${ORT_DISABLE_ADVISOR:-'false'}'" >> vars.env
@@ -202,28 +199,34 @@ ort-scan:
 
     - ./scripts/check-vars.sh
 
-    - ./scripts/setup-ssh.sh
+    # Create ~/.ssh dir with SSH keys if SSH_KEY_1_HOST is set.
+    - |
+      if [[ ! -z "$SSH_KEY_1_HOST" ]]; then
+        ./scripts/setup-ssh.sh
+      fi
 
     - ./scripts/setup-ort-cli-config.sh
 
+    # Create ~/.netrc file if NETRC_URL is set.
     - |
       if [[ ! -z "$NETRC_URL" ]]; then 
         ./scripts/setup-netrc.sh 
       fi
 
+     # Create ~/.ivy2/.credentials file if IVY_CREDS_URL is set.
     - |
       if [[ ! -z "$IVY_CREDS_URL" ]]; then 
         ./scripts/setup-ivy-credentials.sh 
       fi
 
-    # Workaround for maven cache
+    # Workaround for maven cache.
     - |
       if [[ -d "$MAVEN_REPO_LOCAL" ]]; then 
         mkdir -p ${HOME}/.m2/repository/
         mv ${MAVEN_REPO_LOCAL}/* ${HOME}/.m2/repository/
       fi
 
-    # Workaround for go cache
+    # Workaround for go cache.
     - |
       if [[ -d "$GO_CACHE_LOCAL" ]]; then 
         mkdir -p ${GOPATH}/pkg/mod
@@ -237,6 +240,8 @@ ort-scan:
         export ORTH="$CI_PROJECT_DIR/bin/orth"
       fi
 
+    # Set up configuration repository which holds ORT configuration files
+    # such as curations.yml, rules.kts, etc.
     - mkdir -p $ORT_CONFIG_DIR && cd $ORT_CONFIG_DIR 
     - git config --global init.defaultBranch master
     - git init
@@ -247,29 +252,40 @@ ort-scan:
     - cd ..
     - echo "export ORT_CONFIG_REVISION='$ORT_CONFIG_REVISION'" >> vars.env
 
+    # Execute ORT's Downloader to fetch the source code for the project to be scanned.
     - ./scripts/ort-downloader.sh || { [ $? -eq 1 ] && exit 1; }
 
     - echo "[DEBUG] env vars"; env
   script:
+    # Executes ORT's Analyzer to determines the dependencies of projects and their metadata,
+    # abstracting which package managers or build systems are actually being used.
     - ./scripts/ort-step-wrapper.sh analyzer
 
+   # Executes ORT's Scanner which uses configured source code scanners to detect license / copyright findings.
     - |
       if [[ "$ORT_DISABLE_SCANNER" = "false" ]]; then
         ./scripts/ort-step-wrapper.sh scanner
       fi
 
+    # Conditionally execute ORT's Advisor to retrieve security advisories
+    # for used dependencies from configured vulnerability data services.
     - |
       if [[ "$ORT_DISABLE_ADVISOR" = "false" ]]; then
         ./scripts/ort-step-wrapper.sh advisor
       fi
 
+    # Conditionally execute ORT's Evaluator to evaluate copyright, file, package and license findings
+    # against customizable policy rules.
     - |
       if [[ "$ORT_DISABLE_EVALUATOR" = "false" ]]; then
         ./scripts/ort-step-wrapper.sh evaluator
       fi
 
+    # Executes ORT's Reporter to presents scan results in various formats (defined by ORT_REPORT_FORMATS) such as visual reports,
+    # Open Source notices or Bill-Of-Materials (BOMs) to easily identify dependencies, licenses, copyrights or policy rule violations.
     - ./scripts/ort-step-wrapper.sh reporter
 
+    # Set NOTICE_FILES_DIFFER boolean based on comparing existing open source notices file against on generated in the scan.
     - diff --brief $PROJECT_DIR/$NOTICE_FILE $ORT_RESULTS_DIR/$NOTICE_FILE && export NOTICE_FILES_DIFFER='false' || export NOTICE_FILES_DIFFER='true'
     - echo "export NOTICE_FILES_DIFFER='$NOTICE_FILES_DIFFER'" >> vars.env
 
@@ -279,14 +295,14 @@ ort-scan:
     # Read variables from file passed from 'script' as they are not available in 'after_script' by default.
     - if [[ -f vars.env ]]; then source vars.env; fi
 
-    # Workaround for maven cache
+    # Workaround for maven cache.
     - |
       if [[ -d "${HOME}/.m2/repository/" ]]; then 
         mkdir -p $MAVEN_REPO_LOCAL
         mv -f ${HOME}/.m2/repository/* $MAVEN_REPO_LOCAL
       fi
 
-    # Workaround for go cache
+    # Workaround for go cache.
     - |
       if [[ -d "${GOPATH}/pkg/mod/" ]]; then 
         mkdir -p ${GO_CACHE_LOCAL}
@@ -295,10 +311,14 @@ ort-scan:
     
     - export JOB_FINISHED_AT=$(date +"%Y-%m-%dT%H:%M:%S%z")
 
+    # Create metadata.json which can be used to reproduce the scan
+    # or perform more easily audits over multiple scan runs.
     - ./scripts/print-metadata.sh > metadata.json
 
+    # Compress some of the ort-scan result files to save disk space and reduce file download times.
     - ./scripts/archive-results.sh
 
+    # If ort-scan is run as part of a merge request add comment with scan results to the merge request.
     - ./scripts/post-mr-comment.sh
 
   rules:

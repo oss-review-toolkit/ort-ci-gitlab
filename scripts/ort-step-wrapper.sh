@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Wrapper for individual ORT bash scripts so we can capture
+# status, start and end times and use them in metadata.json
+
 STEP=$1
 [[ -z "$STEP" ]] && { echo "STEP is not specified" ; exit 1; }
 STEP_NAME_UPPERCASED=${STEP^^}

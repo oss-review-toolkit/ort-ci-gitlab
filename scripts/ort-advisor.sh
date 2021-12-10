@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Executes ORT's Advisor to retrieve security advisories
+# for used dependencies from configured vulnerability data services.
+
 if [[ "$ORT_DISABLE_SCANNER" = "true" ]]; then
     ORT_RESULTS_INPUT_FILE=$ORT_RESULTS_ANALYZER_FILE
 else

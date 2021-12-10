@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# Prints data used to create metadata.json which can be used to reproduce the scan
+# or perform more easily audits over multiple scan runs.
+
 jq -n \
   --arg sw_name "$SW_NAME" \
   --arg sw_version "$SW_VERSION" \

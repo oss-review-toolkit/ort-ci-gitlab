@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Executes ORT's Reporter to presents scan results in various formats (defined by ORT_REPORT_FORMATS) such as visual reports,
+# Open Source notices or Bill-Of-Materials (BOMs) to easily identify dependencies, licenses, copyrights or policy rule violations.
+
 echo "------------------------------------------"
 echo "Generating ORT reports..."
 echo "------------------------------------------"

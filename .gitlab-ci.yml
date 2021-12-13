@@ -83,6 +83,7 @@ variables:
     value: "false" 
     description: "Set value to 'true' in order to rebuild the Docker image."
   ORT_URL: https://github.com/oss-review-toolkit/ort.git
+  FF_SCRIPT_SECTIONS: "true"
 
 
 ort-scan:

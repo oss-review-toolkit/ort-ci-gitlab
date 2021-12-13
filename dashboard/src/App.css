@@ -1,0 +1,43 @@
+@import '~antd/dist/antd.css';
+
+body {
+    background: #fafafa;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    height: auto;
+}
+
+.ort-app {
+    background-color: #fff;
+    border: 1px solid rgba(34,36,38,.15);
+    border-radius: .28rem;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+    font-weight: 300;
+    padding: 0em 0.5em 0.5em 0.5em;
+    margin: 0.5em;
+    min-height: 96vh;
+}
+
+.ort-failed {
+    color: #F5222D;
+}
+
+.ort-running {
+    color: #4092da;
+}
+
+.ort-scan-params div.ant-descriptions-title {
+    font-size: 14px;
+}
+
+.ort-scan-params th.ant-descriptions-item-label,
+.ort-scan-params td.ant-descriptions-item-content {
+    font-size: 12px;
+}
+
+.ort-scan-results a {
+    padding-right: 2px;
+}
+
+.ort-success {
+    color: #52C41A;
+}

@@ -1,5 +1,6 @@
 stages: 
   - build
+  - deploy
   - ort-scan
 
 variables:
@@ -373,3 +374,25 @@ ort-build-image:
   rules:
     - if: $CI_PIPELINE_SOURCE == "web" && $REBUILD_DOCKER_IMAGE == "true"
     - if: $CI_PIPELINE_SOURCE == "schedule" && $REBUILD_DOCKER_IMAGE == "true"
+
+# Deploy ort-scan dashboard to GitLab pages
+pages:
+  stage: deploy
+  image: node:lts
+  tags:
+    - docker
+  script: 
+    - cd dashboard
+    - yarn install
+    - yarn build
+    - cd ../
+    - mkdir -p public
+    - cp -r dashboard/build/ public/dashboard/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web" && $DEPLOY_PAGES == "true"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && "$CI_COMMIT_REF_NAME" == "$CI_DEFAULT_BRANCH"
+      changes: 
+      - dashboard/**/*
+  artifacts:
+    paths:
+      - public

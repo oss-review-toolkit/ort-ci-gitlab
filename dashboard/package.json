@@ -1,0 +1,53 @@
+{
+    "name": "ort-gitlab-dashboard",
+    "version": "0.1.0",
+    "private": true,
+    "author": {
+        "name": "HERE Europe B.V.",
+        "url": "https://here.com"
+    },
+    "license": "Apache-2.0",
+    "dependencies": {
+        "@ant-design/icons": "^4.7.0",
+        "antd": "^4.17.3",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
+        "react-scripts": "4.0.3"
+    },
+    "devDependencies": {
+        "@rescripts/cli": "^0.0.16",
+        "@testing-library/jest-dom": "^5.16.1",
+        "@testing-library/react": "^12.1.2",
+        "@testing-library/user-event": "^13.5.0",
+        "dotenv-webpack": "^7.0.3",
+        "fs-extra": "^10.0.0",
+        "html-inline-css-webpack-plugin": "^1.11.1",
+        "web-vitals": "^2.1.2",
+        "webpack-event-plugin": "^1.1.1"
+    },
+    "scripts": {
+        "start": "rescripts start",
+        "build": "rescripts build",
+        "test": "rescripts test",
+        "lint": "eslint ./src"
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ]
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "homepage": "./"
+}

@@ -9,19 +9,14 @@ RUN apt-get update && \
         build-essential \
         gettext-base \
         jq \
-        xz-utils \
         # 32-bit compatibility (e.g. required for Android SDK)
         lib32z1 \
         # Languages
-        openjdk-11-jdk-headless \
         mono-complete \
         php-cli \
         php-curl \
         php-mbstring \
         php-xml \
-        python3.6-dev \
-        ruby \
-        ruby-dev \
         rustc && \
     # Make the Android SDK writable for non-root-users to allow dynamic SDK installation.
     chmod a+w $ANDROID_HOME -R && \
@@ -32,7 +27,6 @@ RUN apt-get update && \
 
 # Set JAVA_HOME to use the Java SDK instead of the JRE from the base image, as
 # required for ORT's Gradle build.
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
-    FLUTTER_VERSION="2.2.2-stable"
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
 ENTRYPOINT []

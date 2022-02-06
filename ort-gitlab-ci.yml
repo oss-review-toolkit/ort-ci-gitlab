@@ -19,8 +19,6 @@ ort-scan:
   image: alpine
   stage: ort-scan
   interruptible: true
-  variables:
-    ORT_PROJECT_ID: 28931439
   before_script:
     - apk add curl jq
   script:
@@ -53,7 +51,7 @@ ort-scan:
           --form "variables[UPSTREAM_MERGE_REQUEST_IID]=$CI_MERGE_REQUEST_IID" \
           --form "variables[UPSTREAM_PIPELINE_URL]=$CI_PIPELINE_URL" \
           --form "variables[DEPENDENT_ON_JOB_ID]=$DEPENDENT_ON_JOB_ID" \
-          --form "ref=${OSS_CI_REVISION}" ${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/trigger/pipeline \
+          --form "ref=${OSS_CI_REVISION}" ${CI_API_V4_URL}/projects/${ORT_GITLAB_CI_PROJECT_ID}/trigger/pipeline \
       )
       PIPELINE_ID=$(echo $resp | jq -r '.id')
       web_url=$(echo $resp | jq -r '.web_url')
@@ -62,7 +60,7 @@ ort-scan:
       echo "Waiting for pipeline $web_url ..."
       # Wait 30 mins (10 seconds x 180 times) by default
       for retry in $(seq 1 $OSS_RETRY); do
-        status=$(curl -sS -H "PRIVATE-TOKEN:$ORT_READ_API_TOKEN" "${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/pipelines/${PIPELINE_ID}" | jq -r '.status')
+        status=$(curl -sS -H "PRIVATE-TOKEN:$ORT_READ_API_TOKEN" "${CI_API_V4_URL}/projects/${ORT_GITLAB_CI_PROJECT_ID}/pipelines/${PIPELINE_ID}" | jq -r '.status')
         echo "Got pipeline status $status, retry $retry/$OSS_RETRY"
         [[ $status == "success" || $status == "failed" || $status == "canceled" ]] && break
         sleep $OSS_RETRY_DELAY
@@ -71,10 +69,10 @@ ort-scan:
       [[ $status != "success" && $status != "failed" ]] && { echo "$web_url has status $status. Failing by timeout."; exit 1; }
 
       # Fetch id of latest finished job in this pipeline
-      JOB_ID=$(curl -sS -H "PRIVATE-TOKEN:$ORT_READ_API_TOKEN" "${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/pipelines/${PIPELINE_ID}/jobs?scope[]=${status}&per_page=${PER_PAGE:-50}" | jq 'sort_by(.finished_at)[-1].id')
-      echo "Downloading artifacts from ${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/jobs/$JOB_ID/artifacts"
-      curl -fksSL -o ort_artifacts.zip -H "PRIVATE-TOKEN:$ORT_READ_API_TOKEN" "${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/jobs/$JOB_ID/artifacts" || \
-        { echo -e "Can't download artifacts from ${CI_API_V4_URL}/projects/${ORT_PROJECT_ID}/jobs/$JOB_ID/artifacts\nPlease check logs at $web_url"; exit 1; }
+      JOB_ID=$(curl -sS -H "PRIVATE-TOKEN:$ORT_READ_API_TOKEN" "${CI_API_V4_URL}/projects/${ORT_GITLAB_CI_PROJECT_ID}/pipelines/${PIPELINE_ID}/jobs?scope[]=${status}&per_page=${PER_PAGE:-50}" | jq 'sort_by(.finished_at)[-1].id')
+      echo "Downloading artifacts from ${CI_API_V4_URL}/projects/${ORT_GITLAB_CI_PROJECT_ID}/jobs/$JOB_ID/artifacts"
+      curl -fksSL -o ort_artifacts.zip -H "PRIVATE-TOKEN:$ORT_READ_API_TOKEN" "${CI_API_V4_URL}/projects/${ORT_GITLAB_CI_PROJECT_ID}/jobs/$JOB_ID/artifacts" || \
+        { echo -e "Can't download artifacts from ${CI_API_V4_URL}/projects/${ORT_GITLAB_CI_PROJECT_ID}/jobs/$JOB_ID/artifacts\nPlease check logs at $web_url"; exit 1; }
       unzip -q ort_artifacts.zip
 
     - |

@@ -91,7 +91,8 @@ ort-scan:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 ```
 
-3. Optionally, you can define the following [ort-scan variables][gitlab-variables]:
+3. Set `ORT_PROJECT_ID` in [ort-scan variables][gitlab-variables] to the project ID of your mirror of this repository, its value can be found under Settings => General.
+4. Optionally, you can define the following [ort-scan variables][gitlab-variables]:
 
 - `DISABLE_SHALLOW_CLONE`: If set to 'true', the full history of the project is cloned. This option works only if VCS_TYPE is 'git'
 - `ORT_ALLOW_DYNAMIC_VERSIONS`: Enable only if dynamic dependency versions are allowed (note that version ranges specified for dependencies may cause unstable results). This field applies only to package managers that support lock files, e.g. NPM. Disabled by default. Set to 'true' to enable

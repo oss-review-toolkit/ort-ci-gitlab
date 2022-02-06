@@ -107,7 +107,7 @@ ort-scan:
 
 # License
 
-Copyright (C) 2020-2021 HERE Europe B.V.
+Copyright (C) 2020-2022 HERE Europe B.V.
 
 See the [LICENSE](./LICENSE) file in the root of this project for license details.
 

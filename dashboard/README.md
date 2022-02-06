@@ -37,6 +37,6 @@ Launches the test runner in the interactive watch mode.
 
 ## License
 
-Copyright (C) 2021 HERE Europe B.V.
+Copyright (C) 2021-2022 HERE Europe B.V.
 
 See the [LICENSE](./LICENSE) file at the same level as this file.

@@ -99,8 +99,7 @@ ort-scan:
 - `ORT_CONFIG_FILE`: Path to the repository configuration file relative to the VCS root. If empty, '.ort.yml' is used as default
 - `ORT_DISABLE_EVALUATOR`: If set to 'true', ORT's evaluator will not run (no policy checks)
 - `ORT_DISABLE_SCANNER`: If set to 'true', ORT's scanner will not run (no copyright holders and licenses scan)
-- `OSS_RETRY`: The maximum number of downstream `ort-scan` job status checks. The default value is 180. Together with OSS_RETRY_DELAY, this parameter determines the OSS pipeline timeout as OSS_RETRY X OSS_RETRY_DELAY (30 minutes if we use the default values)
-- `OSS_RETRY_DELAY`: Time to wait (in seconds) between consecutive downstream job status checks. The default value is 10. Together with OSS_RETRY, this parameter determines the OSS pipeline timeout as OSS_RETRY X OSS_RETRY_DELAY (30 minutes if we use the default values)
+- `ORT_POLLING_TIMEOUT`: Total possible duration of ORT scan in seconds. Default is 1800 (30 minutes).
 - `NOTICE_FILE`: Path to open source attribution document relative to the VCS root. If empty 'FOSS_NOTICE' is used as default.
 - `SW_NAME`: Name of project, product or component to be scanned. By default the name of the repository is used as shown in its clone URL.
 - `SW_VERSION`: Project version number or release name (use the version from package metadata, not VCS revision). By default, the Git short SHA is used

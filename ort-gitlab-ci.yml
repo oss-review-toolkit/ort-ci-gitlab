@@ -55,15 +55,18 @@ ort-scan:
       )
       PIPELINE_ID=$(echo $resp | jq -r '.id')
       web_url=$(echo $resp | jq -r '.web_url')
-      OSS_RETRY=${OSS_RETRY:-180} # Number of retries
-      OSS_RETRY_DELAY=${OSS_RETRY_DELAY:-10} # How long each retry will take
+
+      ORT_POLLING_TIMEOUT=${ORT_POLLING_TIMEOUT:-1800} # Total possible duration of ORT scan in seconds
+
       echo "Waiting for pipeline $web_url ..."
-      # Wait 30 mins (10 seconds x 180 times) by default
-      for retry in $(seq 1 $OSS_RETRY); do
+      # Check status every 10 seconds for 30 mins (1800 seconds) by default
+      # The seq parameters syntax is 'seq FIRST INCREMENT LAST'. Start from 10 and keep sleep in first line as 
+      # there is no chance that downstream pipeline will finish imidiatelly.
+      for elapsed_time in $(seq 10 10 ${ORT_POLLING_TIMEOUT}); do
+        sleep 10
         status=$(curl -sS -H "PRIVATE-TOKEN:$ORT_READ_API_TOKEN" "${CI_API_V4_URL}/projects/${ORT_GITLAB_CI_PROJECT_ID}/pipelines/${PIPELINE_ID}" | jq -r '.status')
-        echo "Got pipeline status $status, retry $retry/$OSS_RETRY"
+        echo "Got pipeline status $status, elapsed time in seconds - $elapsed_time/${ORT_POLLING_TIMEOUT}"
         [[ $status == "success" || $status == "failed" || $status == "canceled" ]] && break
-        sleep $OSS_RETRY_DELAY
       done
 
       [[ $status != "success" && $status != "failed" ]] && { echo "$web_url has status $status. Failing by timeout."; exit 1; }

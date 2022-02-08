@@ -114,7 +114,14 @@ ort-scan:
   cache:
     key: "${CI_PROJECT_ID}"
     paths:
-      - cache/
+      - cache/.m2/repository
+      - cache/.go/pkg/mod
+      - cache/pip
+      - cache/.gradle
+      - cache/yarn
+      - cache/node_modules
+      - cache/ivy2/cache
+      - cache/sbt
   variables:
     ORT: "/opt/ort/bin/ort"
 
@@ -176,6 +183,7 @@ ort-scan:
     GRADLE_USER_HOME: "${CI_PROJECT_DIR}/cache/.gradle"
     YARN_CACHE_FOLDER: "${CI_PROJECT_DIR}/cache/yarn"
     NODE_PATH: "${CI_PROJECT_DIR}/cache/node_modules"
+    SBT_OPTS: "-Dsbt.global.base=${CI_PROJECT_DIR}/cache/sbt -Dsbt.ivy.home=${CI_PROJECT_DIR}/cache/ivy2 -Divy.home=${CI_PROJECT_DIR}/cache/ivy2"
 
   before_script:
     - export JOB_STARTED_AT=$(date +"%Y-%m-%dT%H:%M:%S%z")

@@ -20,8 +20,6 @@ RUN apt-get update && \
         rustc && \
     # Make the Android SDK writable for non-root-users to allow dynamic SDK installation.
     chmod a+w $ANDROID_HOME -R && \
-    # Make the go installation work for non-root-users
-    chmod a+w $GOPATH -R && \
     # Clean-up
     rm -rf /var/lib/apt/lists/*
 

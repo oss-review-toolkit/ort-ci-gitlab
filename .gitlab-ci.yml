@@ -369,6 +369,7 @@ ort-build-image:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
+    - export ORT_SCANCODE_VERSION=${ORT_SCANCODE_VERSION:-"30.1.0"}
     - apk add --no-cache git
     - |
       if [[ -z "$ORT_REVISION" ]]; then 
@@ -388,7 +389,15 @@ ort-build-image:
         ORT_REVISION=$(git rev-parse --short HEAD)
       fi
     - if [[ "$CI_DEFAULT_BRANCH" == "$CI_COMMIT_REF_NAME" ]]; then MAIN_TAG=latest; else MAIN_TAG="$CI_COMMIT_REF_NAME"; fi
-    - docker build --cache-from $CI_REGISTRY_IMAGE/ort:latest --tag $CI_REGISTRY_IMAGE/ort:$ORT_REVISION --tag $CI_REGISTRY_IMAGE/ort:$MAIN_TAG --build-arg ORT_VERSION="$ORT_REVISION" --build-arg ORT_URL="$ORT_URL" --build-arg BUILDKIT_INLINE_CACHE=1 -f ./Dockerfile .
+    - docker build
+      --cache-from $CI_REGISTRY_IMAGE/ort:latest
+      --tag $CI_REGISTRY_IMAGE/ort:$ORT_REVISION
+      --tag $CI_REGISTRY_IMAGE/ort:$MAIN_TAG
+      --build-arg ORT_VERSION="$ORT_REVISION"
+      --build-arg ORT_URL="$ORT_URL"
+      --build-arg BUILDKIT_INLINE_CACHE=1
+      --build-arg SCANCODE_VERSION="$ORT_SCANCODE_VERSION"
+      -f ./Dockerfile .
     - docker push $CI_REGISTRY_IMAGE/ort:$ORT_REVISION
     - docker push $CI_REGISTRY_IMAGE/ort:$MAIN_TAG
     - cd ..

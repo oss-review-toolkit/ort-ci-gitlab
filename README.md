@@ -125,4 +125,4 @@ OSS Review Toolkit (ORT) is a [Linux Foundation project](https://www.linuxfounda
 [gitlab-variables]: https://docs.gitlab.com/ee/ci/variables/#create-a-custom-variable-in-the-ui
 [mime-types]: https://github.com/jshttp/mime-types.git
 [ort]: https://github.com/oss-review-toolkit/ort
-[ort-configuration-repo]: https://gitlab.com/tsteenbe/ort-configuration
+[ort-configuration-repo]: https://github.com/oss-review-toolkit/ort-config

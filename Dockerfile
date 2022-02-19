@@ -23,8 +23,4 @@ RUN apt-get update && \
     # Clean-up
     rm -rf /var/lib/apt/lists/*
 
-# Set JAVA_HOME to use the Java SDK instead of the JRE from the base image, as
-# required for ORT's Gradle build.
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-
 ENTRYPOINT []

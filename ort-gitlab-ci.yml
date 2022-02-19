@@ -28,7 +28,7 @@ ort-scan:
       resp=$(
         curl -fksSL --request POST \
           --form "token=${ORT_TRIGGER_API_TOKEN}" \
-          --form "variables[SW_NAME]=$ORT_SW_NAME" \
+          --form "variables[SW_NAME]=$SW_NAME" \
           --form "variables[SW_VERSION]=$SW_VERSION" \
           --form "variables[VCS_URL]=$VCS_URL" \
           --form "variables[ORT_CONFIG_FILE]=$ORT_CONFIG_FILE" \

@@ -84,6 +84,9 @@ ort-scan:
   variables:
     SW_NAME: "Mime Types"
     SW_VERSION: "2.1.27"
+  artifacts:
+    reports:
+      license_scanning: ort-results/gl-license-scanning-report.json
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: manual
@@ -91,7 +94,7 @@ ort-scan:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 ```
 
-3. Set `ORT_PROJECT_ID` in [ort-scan variables][gitlab-variables] to the project ID of your mirror of this repository, its value can be found under Settings => General.
+3. Set `ORT_PROJECT_ID` in [ort-scan variables][gitlab-variables] to the project ID of your mirror of this repository, its value can be found under *Settings > General*.
 4. Optionally, you can define the following [ort-scan variables][gitlab-variables]:
 
 - `DISABLE_SHALLOW_CLONE`: If set to 'true', the full history of the project is cloned. This option works only if VCS_TYPE is 'git'
@@ -104,6 +107,10 @@ ort-scan:
 - `SW_NAME`: Name of project, product or component to be scanned. By default the name of the repository is used as shown in its clone URL.
 - `SW_VERSION`: Project version number or release name (use the version from package metadata, not VCS revision). By default, the Git short SHA is used
 - `VCS_URL`: VCS URL (clone URL) of the project to scan, use only when URL is not correctly detected
+
+# Community
+
+Have questions? or thinking about contributing? Get in touch with us and the ORT community via our [Slack channel][ort-slack-join] or fill an [issue][ort-gitlab-ci-issue]. 
 
 # License
 
@@ -126,3 +133,5 @@ OSS Review Toolkit (ORT) is a [Linux Foundation project](https://www.linuxfounda
 [mime-types]: https://github.com/jshttp/mime-types.git
 [ort]: https://github.com/oss-review-toolkit/ort
 [ort-configuration-repo]: https://github.com/oss-review-toolkit/ort-config
+[ort-gitlab-ci-issue]: https://github.com/oss-review-toolkit/ort-gitlab-ci/issues
+[ort-slack-join]: https://join.slack.com/t/ort-talk/shared_invite/enQtMzk3MDU5Njk0Njc1LThiNmJmMjc5YWUxZTU4OGI5NmY3YTFlZWM5YTliZmY5ODc0MGMyOWIwYmRiZWFmNGMzOWY2NzVhYTI0NTJkNmY 

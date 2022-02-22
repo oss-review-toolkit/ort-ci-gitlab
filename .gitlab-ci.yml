@@ -199,7 +199,7 @@ ort-scan:
     - export DISABLE_SHALLOW_CLONE=${DISABLE_SHALLOW_CLONE:-"false"}
     - export FAIL_ON_OUTDATED_NOTICE_FILE=${FAIL_ON_OUTDATED_NOTICE_FILE:-"false"}
     - export ORT_CONFIG_REVISION=${ORT_CONFIG_REVISION:-"main"}
-    - export ORT_CONFIG_REPO_SSH_URL=${ORT_CONFIG_REPO_SSH_URL:-"git@gitlab.com:${CI_PROJECT_NAMESPACE}/ort-configuration.git"}
+    - export ORT_CONFIG_REPO_SSH_URL=${ORT_CONFIG_REPO_SSH_URL:-"https://github.com/oss-review-toolkit/ort-config.git"}
     - export ORT_DISABLE_ADVISOR=${ORT_DISABLE_ADVISOR:-"false"}
     - export ORT_DISABLE_EVALUATOR=${ORT_DISABLE_EVALUATOR:-"false"}
     - export ORT_DISABLE_SCANNER=${ORT_DISABLE_SCANNER:-"true"}

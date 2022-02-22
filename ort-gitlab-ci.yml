@@ -23,8 +23,8 @@ ort-scan:
     - apk add curl jq
   script:
     - |
-      OSS_CI_REVISION=${OSS_CI_REVISION:-main}
       ORT_DOCKER_IMAGE=${ORT_DOCKER_IMAGE:-"${CI_REGISTRY_IMAGE}/ort-custom:latest"}
+      ORT_GITLAB_CI_REVISION=${OSS_GITLAB_CI_REVISION:-main}
       resp=$(
         curl -fksSL --request POST \
           --form "token=${ORT_TRIGGER_API_TOKEN}" \
@@ -51,7 +51,7 @@ ort-scan:
           --form "variables[UPSTREAM_MERGE_REQUEST_IID]=$CI_MERGE_REQUEST_IID" \
           --form "variables[UPSTREAM_PIPELINE_URL]=$CI_PIPELINE_URL" \
           --form "variables[DEPENDENT_ON_JOB_ID]=$DEPENDENT_ON_JOB_ID" \
-          --form "ref=${OSS_CI_REVISION}" ${CI_API_V4_URL}/projects/${ORT_GITLAB_CI_PROJECT_ID}/trigger/pipeline \
+          --form "ref=${ORT_GITLAB_CI_REVISION}" ${CI_API_V4_URL}/projects/${ORT_GITLAB_CI_PROJECT_ID}/trigger/pipeline \
       )
       PIPELINE_ID=$(echo $resp | jq -r '.id')
       web_url=$(echo $resp | jq -r '.web_url')

@@ -20,7 +20,13 @@ if [ "$VCS_TYPE" = "git" ]; then
     popd
 fi
 
-ORT_ANALYZER_OPTIONS="--package-curations-file $ORT_CONFIG_CURATIONS_FILE"
+if [[ -d "$ORT_CONFIG_CURATIONS_DIR" ]]; then
+    ORT_ANALYZER_OPTIONS="--package-curations-dir $ORT_CONFIG_CURATIONS_DIR"
+elif [[ -f "$ORT_CONFIG_CURATIONS_FILE" ]]; then
+    ORT_ANALYZER_OPTIONS="--package-curations-file $ORT_CONFIG_CURATIONS_FILE"
+else
+    ORT_ANALYZER_OPTIONS=""
+fi
 
 if [[ -n "$ORT_CONFIG_FILE" ]]; then
     ORT_ANALYZER_OPTIONS="$ORT_ANALYZER_OPTIONS --repository-configuration-file $CI_PROJECT_DIR/$ORT_CONFIG_FILE";

@@ -199,7 +199,7 @@ ort-scan:
     - export DISABLE_SHALLOW_CLONE=${DISABLE_SHALLOW_CLONE:-"false"}
     - export FAIL_ON_OUTDATED_NOTICE_FILE=${FAIL_ON_OUTDATED_NOTICE_FILE:-"false"}
     - export ORT_CONFIG_REVISION=${ORT_CONFIG_REVISION:-"main"}
-    - export ORT_CONFIG_REPO_SSH_URL=${ORT_CONFIG_REPO_SSH_URL:-"https://github.com/oss-review-toolkit/ort-config.git"}
+    - export ORT_CONFIG_REPO_URL=${ORT_CONFIG_REPO_URL:-"https://github.com/oss-review-toolkit/ort-config.git"}
     - export ORT_DISABLE_ADVISOR=${ORT_DISABLE_ADVISOR:-"false"}
     - export ORT_DISABLE_EVALUATOR=${ORT_DISABLE_EVALUATOR:-"false"}
     - export ORT_DISABLE_SCANNER=${ORT_DISABLE_SCANNER:-"true"}
@@ -217,7 +217,7 @@ ort-scan:
     - echo "export SW_NAME='$SW_NAME'" >> vars.env
     - echo "export SW_VERSION='$SW_VERSION'" >> vars.env
     - echo "export ORT_ALLOW_DYNAMIC_VERSIONS='$ORT_ALLOW_DYNAMIC_VERSIONS'" >> vars.env
-    - echo "export ORT_CONFIG_REPO_SSH_URL='$ORT_CONFIG_REPO_SSH_URL'" >> vars.env
+    - echo "export ORT_CONFIG_REPO_URL='$ORT_CONFIG_REPO_URL'" >> vars.env
     - echo "export ORT_DISABLE_ADVISOR='${ORT_DISABLE_ADVISOR:-'false'}'" >> vars.env
     - echo "export ORT_DISABLE_EVALUATOR='${ORT_DISABLE_EVALUATOR:-'false'}'" >> vars.env
     - echo "export ORT_DISABLE_SCANNER='${ORT_DISABLE_SCANNER:-'false'}'" >> vars.env
@@ -272,7 +272,7 @@ ort-scan:
     - mkdir -p $ORT_CONFIG_DIR && cd $ORT_CONFIG_DIR 
     - git config --global init.defaultBranch master
     - git init
-    - git remote add origin $ORT_CONFIG_REPO_SSH_URL
+    - git remote add origin $ORT_CONFIG_REPO_URL
     - git fetch --depth 1 origin $ORT_CONFIG_REVISION
     - git checkout FETCH_HEAD
     - ORT_CONFIG_REVISION=$(git rev-parse HEAD)

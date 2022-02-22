@@ -12,7 +12,7 @@ jq -n \
   --arg vcs_path "$VCS_PATH" \
   --arg gitlab_project_id "$GITLAB_PROJECT_ID" \
   --arg ort_config_file "$ORT_CONFIG_FILE" \
-  --arg ort_config_ssh_url "$ORT_CONFIG_REPO_SSH_URL" \
+  --arg ort_config_url "$ORT_CONFIG_REPO_URL" \
   --arg ort_config_revision "$ORT_CONFIG_REVISION" \
   --arg ort_allow_dynamic_versions "$ORT_ALLOW_DYNAMIC_VERSIONS" \
   --arg notice_file "$NOTICE_FILE" \
@@ -66,7 +66,7 @@ jq -n \
         VCS_PATH: $vcs_path,
         GITLAB_PROJECT_ID: $gitlab_project_id,
         ORT_CONFIG_FILE: $ort_config_file,
-        ORT_CONFIG_REPO_SSH_URL: $ort_config_ssh_url,
+        ORT_CONFIG_REPO_URL: $ort_config_url,
         ORT_CONFIG_REVISION: $ort_config_revision,
         ORT_ALLOW_DYNAMIC_VERSIONS: $ort_allow_dynamic_versions,
         DISABLE_SHALLOW_CLONE: $disable_shallow_clone,

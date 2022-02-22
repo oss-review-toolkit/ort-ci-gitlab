@@ -23,7 +23,6 @@ ort-scan:
     - apk add curl jq
   script:
     - |
-      ORT_DOCKER_IMAGE=${ORT_DOCKER_IMAGE:-"${CI_REGISTRY_IMAGE}/ort-custom:latest"}
       ORT_GITLAB_CI_REVISION=${OSS_GITLAB_CI_REVISION:-main}
       resp=$(
         curl -fksSL --request POST \
@@ -37,7 +36,6 @@ ort-scan:
           --form "variables[FAIL_ON_OUTDATED_NOTICE_FILE]=$FAIL_ON_OUTDATED_NOTICE_FILE" \
           --form "variables[ORT_DISABLE_EVALUATOR]=$ORT_DISABLE_EVALUATOR" \
           --form "variables[ORT_DISABLE_SCANNER]=$ORT_DISABLE_SCANNER" \
-          --form "variables[ORT_DOCKER_IMAGE]=$ORT_DOCKER_IMAGE" \
           --form "variables[NOTICE_FILE]=$NOTICE_FILE" \
           --form "variables[UPSTREAM_BRANCH]=$CI_COMMIT_REF_NAME" \
           --form "variables[UPSTREAM_PROJECT_ID]=$CI_PROJECT_ID" \

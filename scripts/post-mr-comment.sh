@@ -4,7 +4,7 @@
 
 # Fetch UPSTREAM_MERGE_REQUEST_IID if pipeline is not an MR pipeline.
 UPSTREAM_MERGE_REQUEST_IID=${UPSTREAM_MERGE_REQUEST_IID:-$(
-  curl -s -H "PRIVATE-TOKEN:${ORT_MR_TOKEN}" \
+  curl -s -H "PRIVATE-TOKEN:${ORT_MR_API_TOKEN}" \
     "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/repository/commits/${UPSTREAM_COMMIT_SHA}/merge_requests" \
     | jq -r ".[0].iid // empty"
 )}
@@ -49,11 +49,11 @@ NOTES_API_URL="${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/merge_requests/$
 if [[ -z ${NOTE_ID} ]]; then
   echo "Putting new comment to MR"
   curl --request POST --data-urlencode body@message.txt \
-    -H "PRIVATE-TOKEN:${ORT_MR_TOKEN}" \
+    -H "PRIVATE-TOKEN:${ORT_MR_API_TOKEN}" \
     "${NOTES_API_URL}"
 else
   echo "Editing existing comment ${NOTE_ID}"
   curl --request PUT --data-urlencode body@message.txt \
-  -H "PRIVATE-TOKEN:${ORT_MR_TOKEN}" \
+  -H "PRIVATE-TOKEN:${ORT_MR_API_TOKEN}" \
   "${NOTES_API_URL}/${NOTE_ID}"
 fi

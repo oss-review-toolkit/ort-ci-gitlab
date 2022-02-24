@@ -18,10 +18,10 @@ echo "export ERROR_ISSUES='$ERROR_ISSUES'" >> vars.env
 echo "export ERROR_VIOLATIONS='$ERROR_VIOLATIONS'" >> vars.env
 
 if [[ $ERROR_ISSUES -eq 0 && $ERROR_VIOLATIONS -eq 0 ]]; then
-	echo "OSS scan has no issues nor violations that have to be fixed."
+	echo "Scan has no issues nor violations that have to be fixed."
 	exit_code=0
 else
-	echo "OSS scan has ${ERROR_ISSUES} issues and ${ERROR_VIOLATIONS} violations that have to be fixed."
+	echo "Scan has ${ERROR_ISSUES} issues and ${ERROR_VIOLATIONS} violations that have to be fixed."
 	echo "Please check the report for more info."
 	exit_code=1
 fi	

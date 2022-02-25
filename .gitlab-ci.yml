@@ -134,7 +134,7 @@ ort-scan:
     ORT_CONFIG_CURATIONS_FILE: "${ORT_CONFIG_DIR}/curations.yml"
     ORT_CONFIG_CURATIONS_DIR: "${ORT_CONFIG_DIR}/curations"
     ORT_CONFIG_CUSTOM_LICENSE_TEXTS_DIR: "${ORT_CONFIG_DIR}/custom-license-ids"
-    ORT_CONFIG_LICENSE_CONFIGURATION_FILE: "${ORT_CONFIG_DIR}/license-classifications.yml"
+    ORT_CONFIG_LICENSE_CLASSIFICATIONS_FILE: "${ORT_CONFIG_DIR}/license-classifications.yml"
     ORT_CONFIG_RESOLUTIONS_FILE: "${ORT_CONFIG_DIR}/resolutions.yml"
     ORT_CONFIG_RULES_FILE: "${ORT_CONFIG_DIR}/evaluator.rules.kts"
     ORT_CONFIG_PACKAGE_CONFIGURATION_DIR: "${ORT_CONFIG_DIR}/package-configurations"

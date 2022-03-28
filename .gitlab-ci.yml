@@ -20,17 +20,43 @@ stages:
   - deploy
   - ort-scan
 
+
 variables:
-  SW_NAME:
+  ORT_SCRIPTS_DIR:
+    value: "./scripts"
+    description: |
+      "The Base CI Scripts Dir"
+  
+  ORT_DOCKER_IMAGE:
+    value: "${CI_REGISTRY_IMAGE}/ort-custom:latest"
+    description: |
+      "The Base Docker ORT Image to use"
+  
+  ORT_SCRIPTS_REPO_URL:
     value: ""
+    description: |
+      "URL to an repo with CI bash scripts"
+  
+  RUNNER_TAG:
+    value: docker
+    description: |
+      "A runner tag for the gitlab runner"
+  
+  PROJECT_DIR:
+    value: "project"
+    description: |
+      "The project download dir."
+  
+  SW_NAME:
+    value: $CI_PROJECT_TITLE
     description: |
       "Name of project, product or component to be scanned.
       By default the name of the repository is used as shown in its clone URL."
   SW_VERSION:
     value: ""
     description: |
-      Project version number or release name (use the version from package metadata, not VCS revision).
-      By default, the Git short SHA is used.
+      "Project version number or release name (use the version from package metadata, not VCS revision).
+      By default, the Git short SHA is used."
   VCS_TYPE: 
     value: "git"
     description: "Identifier of the project version control system (git, git-repo, mercurial or subversion)."
@@ -38,19 +64,19 @@ variables:
     value: ""
     description: "VCS URL (clone URL) of project to scan."
   VCS_REVISION: 
-    value: ""
+    value: $CI_COMMIT_SHA
     description: |
-      SHA1 or tag to scan (not branch names, because they can move). If VCS_TYPE is 'git-repo',
-      SHA1 must be unabbreviated, tag names must be prefixed with 'refs/tags/'.
+      "SHA1 or tag to scan (not branch names, because they can move). If VCS_TYPE is 'git-repo',
+      SHA1 must be unabbreviated, tag names must be prefixed with 'refs/tags/'."
   VCS_PATH:
     value: ""
     description: |
-      Leave this field empty unless one of the following special cases applies: project VCS_TYPE is 
+      "Leave this field empty unless one of the following special cases applies: project VCS_TYPE is 
       git-repo - specify path to repo manifest file (e.g. olympia.xml,
       note VCS_URL must point to a manifest repository) 
       you require sparse checkout - specify repository sub-path to download and scan
       (e.g. projects/gradle/, note sparse checkout is possible only for VCS_TYPE
-      git, mercurial or subversion)
+      git, mercurial or subversion)"
   ORT_CONFIG_FILE:
     value: ""
     description: "Path to repository configuration file relative to the VCS root. If empty '.ort.yml' is used as default."
@@ -74,6 +100,9 @@ variables:
     value: ""
     description: |
       The Git revision of the ORT configuration repository to use.
+  ORT_DISABLE_DOWNLOADER:
+    value: ""
+    description: "If set to 'true', ORT's downloader will not run. For example, the repo might be cloned already if used in a gitlab/github pipeline. Set PROJECT_DIR accordingly to current dir if this is disabled."
   ORT_DISABLE_ADVISOR:
     value: ""
     description: "If set to 'true', ORT's advisor will not run (no security vulnerability checks)."
@@ -110,7 +139,7 @@ ort-scan:
     name: "$ORT_DOCKER_IMAGE"
     entrypoint: [""]
   tags:
-    - docker
+    - "$RUNNER_TAG" 
   cache:
     key: "${CI_PROJECT_ID}"
     paths:
@@ -143,7 +172,6 @@ ort-scan:
 
     ORT_DATA_DIR: ".ort"
 
-    ORT_DOCKER_IMAGE: "${CI_REGISTRY_IMAGE}/ort-custom:latest"
 
     ORT_ENABLE_REPOSITORY_PACKAGE_CURATIONS: "false"
     ORT_ENABLE_REPOSITORY_PACKAGE_CONFIGURATIONS: "false"
@@ -152,7 +180,6 @@ ort-scan:
 
     ORT_REPORT_FORMATS: "CycloneDx,EvaluatedModel,GitLabLicenseModel,NoticeTemplate,SpdxDocument,StaticHtml,WebApp"
 
-    PROJECT_DIR: "project"
 
     ORT_RESULTS_DIR: "ort-results"
     ORT_RESULTS_ADVISOR_FILE: "${ORT_RESULTS_DIR}/advisor-result.json"
@@ -220,32 +247,43 @@ ort-scan:
     - echo "export SW_VERSION='$SW_VERSION'" >> vars.env
     - echo "export ORT_ALLOW_DYNAMIC_VERSIONS='$ORT_ALLOW_DYNAMIC_VERSIONS'" >> vars.env
     - echo "export ORT_CONFIG_REPO_URL='$ORT_CONFIG_REPO_URL'" >> vars.env
+    - echo "export ORT_SCRIPTS_REPO_URL='${ORT_SCRIPTS_REPO_URL}'" >> vars.env
     - echo "export ORT_DISABLE_ADVISOR='${ORT_DISABLE_ADVISOR:-'false'}'" >> vars.env
     - echo "export ORT_DISABLE_EVALUATOR='${ORT_DISABLE_EVALUATOR:-'false'}'" >> vars.env
     - echo "export ORT_DISABLE_SCANNER='${ORT_DISABLE_SCANNER:-'false'}'" >> vars.env
     - export ORT_VERSION=$($ORT --version)
     - echo "export ORT_VERSION='$ORT_VERSION'" >> vars.env
 
-    - ./scripts/check-vars.sh
+    # Get the ort scan template repository from a repo
+    # clone the project one folder up from default clone path 
+    # and link to it
+    - | 
+      if [[ ! -z "$ORT_SCRIPTS_REPO_URL" ]]; then
+        git -C ../ clone --depth 1 $ORT_SCRIPTS_REPO_URL
+        export ORT_SCRIPTS_DIR=$CI_PROJECT_DIR/../ort-gitlab-ci/scripts
+        echo "export ORT_SCRIPTS_DIR='$ORT_SCRIPTS_DIR'" >> vars.env
+      fi
+
+    - ${ORT_SCRIPTS_DIR}/check-vars.sh
 
     # Create ~/.ssh dir with SSH keys if SSH_KEY_1_HOST is set.
     - |
       if [[ ! -z "$SSH_KEY_1_HOST" ]]; then
-        ./scripts/setup-ssh.sh
+        ${ORT_SCRIPTS_DIR}/setup-ssh.sh
       fi
 
-    - ./scripts/setup-ort-cli-config.sh
+    - ${ORT_SCRIPTS_DIR}/setup-ort-cli-config.sh
 
     # Create ~/.netrc file if NETRC_URL is set.
     - |
       if [[ ! -z "$NETRC_URL" ]]; then 
-        ./scripts/setup-netrc.sh 
+        ${ORT_SCRIPTS_DIR}/setup-netrc.sh 
       fi
 
      # Create ~/.ivy2/.credentials file if IVY_CREDS_URL is set.
     - |
       if [[ ! -z "$IVY_CREDS_URL" ]]; then 
-        ./scripts/setup-ivy-credentials.sh 
+        ${ORT_SCRIPTS_DIR}/setup-ivy-credentials.sh 
       fi
 
     # Workaround for maven cache.
@@ -264,61 +302,65 @@ ort-scan:
 
     - |
       if [[ ! -z "$ORT_REVISION" ]]; then 
-        ./scripts/setup-ort.sh 
+        ${ORT_SCRIPTS_DIR}/setup-ort.sh 
         export ORT="$CI_PROJECT_DIR/bin/ort"
         export ORTH="$CI_PROJECT_DIR/bin/orth"
       fi
 
     # Set up configuration repository which holds ORT configuration files
     # such as curations.yml, rules.kts, etc.
-    - mkdir -p $ORT_CONFIG_DIR && cd $ORT_CONFIG_DIR 
+    - mkdir -p ../$ORT_CONFIG_DIR && cd ../$ORT_CONFIG_DIR 
     - git config --global init.defaultBranch master
     - git init
     - git remote add origin $ORT_CONFIG_REPO_URL
     - git fetch --depth 1 origin $ORT_CONFIG_REVISION
     - git checkout FETCH_HEAD
     - ORT_CONFIG_REVISION=$(git rev-parse HEAD)
-    - cd ..
+    - export ORT_CONFIG_DIR=../$ORT_CONFIG_DIR
+    - cd $CI_PROJECT_DIR
     - echo "export ORT_CONFIG_REVISION='$ORT_CONFIG_REVISION'" >> vars.env
 
     # Execute ORT's Downloader to fetch the source code for the project to be scanned.
-    - ./scripts/ort-downloader.sh || { [ $? -eq 1 ] && exit 1; }
+    - |
+      if [[ "$ORT_DISABLE_DOWNLOADER" = "false" ]]; then
+        ${ORT_SCRIPTS_DIR}/ort-downloader.sh || { [ $? -eq 1 ] && exit 1; }
+      fi
 
     - echo "[DEBUG] env vars"; env
   script:
     # Executes ORT's Analyzer to determines the dependencies of projects and their metadata,
     # abstracting which package managers or build systems are actually being used.
-    - ./scripts/ort-step-wrapper.sh analyzer
+    - ${ORT_SCRIPTS_DIR}/ort-step-wrapper.sh analyzer
 
    # Executes ORT's Scanner which uses configured source code scanners to detect license / copyright findings.
     - |
       if [[ "$ORT_DISABLE_SCANNER" = "false" ]]; then
-        ./scripts/ort-step-wrapper.sh scanner
+        ${ORT_SCRIPTS_DIR}/ort-step-wrapper.sh scanner
       fi
 
     # Conditionally execute ORT's Advisor to retrieve security advisories
     # for used dependencies from configured vulnerability data services.
     - |
       if [[ "$ORT_DISABLE_ADVISOR" = "false" ]]; then
-        ./scripts/ort-step-wrapper.sh advisor
+        ${ORT_SCRIPTS_DIR}/ort-step-wrapper.sh advisor
       fi
 
     # Conditionally execute ORT's Evaluator to evaluate copyright, file, package and license findings
     # against customizable policy rules.
     - |
       if [[ "$ORT_DISABLE_EVALUATOR" = "false" ]]; then
-        ./scripts/ort-step-wrapper.sh evaluator
+        ${ORT_SCRIPTS_DIR}/ort-step-wrapper.sh evaluator
       fi
 
     # Executes ORT's Reporter to presents scan results in various formats (defined by ORT_REPORT_FORMATS) such as visual reports,
     # Open Source notices or Bill-Of-Materials (BOMs) to easily identify dependencies, licenses, copyrights or policy rule violations.
-    - ./scripts/ort-step-wrapper.sh reporter
+    - ${ORT_SCRIPTS_DIR}/ort-step-wrapper.sh reporter
 
     # Set NOTICE_FILES_DIFFER boolean based on comparing existing open source notices file against on generated in the scan.
     - diff --brief $PROJECT_DIR/$NOTICE_FILE $ORT_RESULTS_DIR/$NOTICE_FILE && export NOTICE_FILES_DIFFER='false' || export NOTICE_FILES_DIFFER='true'
     - echo "export NOTICE_FILES_DIFFER='$NOTICE_FILES_DIFFER'" >> vars.env
 
-    - ./scripts/set-job-result.sh
+    - ${ORT_SCRIPTS_DIR}/set-job-result.sh
 
   after_script:
     # Read variables from file passed from 'script' as they are not available in 'after_script' by default.
@@ -342,13 +384,14 @@ ort-scan:
 
     # Create metadata.json which can be used to reproduce the scan
     # or perform more easily audits over multiple scan runs.
-    - ./scripts/print-metadata.sh > metadata.json
+    - ${ORT_SCRIPTS_DIR}/print-metadata.sh > metadata.json
 
     # Compress some of the ort-scan result files to save disk space and reduce file download times.
-    - ./scripts/archive-results.sh
+    - ${ORT_SCRIPTS_DIR}/archive-results.sh
 
     # If ort-scan is run as part of a merge request add comment with scan results to the merge request.
-    - ./scripts/post-mr-comment.sh
+    - ${ORT_SCRIPTS_DIR}/post-mr-comment.sh
+
 
   rules:
     - if: $CI_PIPELINE_SOURCE == "pipeline" || $CI_PIPELINE_SOURCE == "trigger"

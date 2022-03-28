@@ -9,7 +9,7 @@ STEP_NAME_UPPERCASED=${STEP^^}
 
 START_TIME=$(date +"%Y-%m-%dT%H:%M:%S%z")
 
-./scripts/ort-${STEP}.sh
+$ORT_SCRIPTS_DIR/ort-${STEP}.sh
 EXIT_CODE=$?
 
 END_TIME=$(date +"%Y-%m-%dT%H:%M:%S%z")

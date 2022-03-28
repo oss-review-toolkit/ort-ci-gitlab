@@ -43,7 +43,7 @@ else
 fi
 
 # Convert the LABELS variable with format "key1=val1, key1=val2" into separate ORT label options (-l).
-[[ -z "$LABELS" ]] || LABEL_OPTIONS=$(${CI_PROJECT_DIR}/scripts/labels.sh)
+[[ -z "$LABELS" ]] || LABEL_OPTIONS=$(${ORT_SCRIPTS_DIR}/labels.sh)
 
 echo "------------------------------------------"
 echo "Running ORT analyzer..."

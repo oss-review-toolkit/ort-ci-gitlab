@@ -123,7 +123,7 @@ ort-scan:
       - cache/ivy2/cache
       - cache/sbt
   variables:
-    ORT: "/opt/ort/bin/ort"
+    ORT_CLI: "/opt/ort/bin/ort"
 
     ORT_ADVISOR_PROVIDERS: "OssIndex"
 
@@ -223,7 +223,7 @@ ort-scan:
     - echo "export ORT_DISABLE_ADVISOR='${ORT_DISABLE_ADVISOR:-'false'}'" >> vars.env
     - echo "export ORT_DISABLE_EVALUATOR='${ORT_DISABLE_EVALUATOR:-'false'}'" >> vars.env
     - echo "export ORT_DISABLE_SCANNER='${ORT_DISABLE_SCANNER:-'false'}'" >> vars.env
-    - export ORT_VERSION=$($ORT --version)
+    - export ORT_VERSION=$($ORT_CLI --version)
     - echo "export ORT_VERSION='$ORT_VERSION'" >> vars.env
 
     - ./scripts/check-vars.sh
@@ -265,7 +265,7 @@ ort-scan:
     - |
       if [[ ! -z "$ORT_REVISION" ]]; then 
         ./scripts/setup-ort.sh 
-        export ORT="$CI_PROJECT_DIR/bin/ort"
+        export ORT_CLI="$CI_PROJECT_DIR/bin/ort"
         export ORTH="$CI_PROJECT_DIR/bin/orth"
       fi
 

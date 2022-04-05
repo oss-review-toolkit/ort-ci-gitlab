@@ -9,7 +9,7 @@ echo "------------------------------------------"
 # Remove all special characters and whitespace from the PROJECT_NAME, because some tools cannot handle them.
 SAFE_SW_NAME=$(echo $SW_NAME | sed -e 's/[^A-Za-z0-9 \-\_]//g' -e 's/\s/_/g')
 
-$ORT \
+$ORT_CLI \
     --$ORT_LOG_LEVEL \
     --stacktrace \
     download \

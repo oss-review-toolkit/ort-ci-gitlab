@@ -61,7 +61,7 @@ fi
 #    ORT_REPORTER_OPTIONS="$ORT_REPORTER_OPTIONS -O SpdxDocument=document.name='${SW_NAME}' \ -O SpdxDocument=output.file.formats=json,yaml"
 # fi
 
-$ORT \
+$ORT_CLI \
     --$ORT_LOG_LEVEL \
     --stacktrace \
     report \

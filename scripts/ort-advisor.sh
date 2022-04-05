@@ -9,7 +9,7 @@ else
     ORT_RESULTS_INPUT_FILE=$ORT_RESULTS_SCANNER_FILE
 fi
 
-$ORT \
+$ORT_CLI \
     --$ORT_LOG_LEVEL \
     --stacktrace \
     advise \

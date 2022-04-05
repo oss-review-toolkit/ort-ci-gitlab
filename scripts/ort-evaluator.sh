@@ -45,7 +45,7 @@ else
     echo "Error: ORT policy rules file (*.rules.kts) not found. Please set ORT_CONFIG_RULES_FILE"
 fi
 
-$ORT \
+$ORT_CLI \
     --$ORT_LOG_LEVEL \
     --stacktrace \
     evaluate \
@@ -61,7 +61,7 @@ if [ $EXIT_CODE -ge 2 ]; then
 fi
 
 # Upload the final ORT result to PostgreSQL.
-# $ORT \
+# $ORT_CLI \
 #     --$ORT_LOG_LEVEL \
 #     --stacktrace \
 #     -c $ORT_CLI_CONFIG_FILE \

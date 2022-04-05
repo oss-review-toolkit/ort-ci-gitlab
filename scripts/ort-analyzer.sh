@@ -49,7 +49,7 @@ echo "------------------------------------------"
 echo "Running ORT analyzer..."
 echo "------------------------------------------"
 
-$ORT \
+$ORT_CLI \
     --$ORT_LOG_LEVEL \
     --stacktrace \
     $ORT_OPTIONS \

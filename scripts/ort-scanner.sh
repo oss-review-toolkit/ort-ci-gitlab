@@ -5,7 +5,7 @@
 export JAVA_OPTS="-Xmx24G"
 
 echo "Scan source code for packages defined as dependencies and store results in $ORT_RESULTS_DIR."
-$ORT \
+$ORT_CLI \
     --$ORT_LOG_LEVEL \
     --stacktrace \
     -c $ORT_CLI_CONFIG_FILE \

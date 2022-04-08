@@ -191,7 +191,8 @@ ort-scan:
     - export JOB_STARTED_AT=$(date +"%Y-%m-%dT%H:%M:%S%z")
     - echo "export JOB_STARTED_AT='$JOB_STARTED_AT'" >> vars.env
 
-    - export TRIGGERER=${UPSTREAM_PIPELINE_URL:-"$GITLAB_USER_NAME manually"}
+    # GITLAB_USER_NAME is UPPERCASED in order to unmask it in GitLab logs
+    - export TRIGGERER=${UPSTREAM_PIPELINE_URL:-"${GITLAB_USER_NAME^^} manually"}
     - echo "Started by $TRIGGERER"
 
     # Check variables below and fix their value to "false" (that is default for them) 

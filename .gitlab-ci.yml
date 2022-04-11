@@ -246,14 +246,15 @@ ort-scan:
 
     # Set up configuration repository which holds ORT configuration files
     # such as curations.yml, rules.kts, etc.
-    - mkdir -p $ORT_CONFIG_DIR && cd $ORT_CONFIG_DIR 
-    - git config --global init.defaultBranch master
-    - git init
-    - git remote add origin $ORT_CONFIG_REPO_URL
-    - git fetch --depth 1 origin $ORT_CONFIG_REVISION
-    - git checkout FETCH_HEAD
-    - ORT_CONFIG_REVISION=$(git rev-parse HEAD)
-    - cd ..
+    - |
+      mkdir -p $ORT_CONFIG_DIR && cd $ORT_CONFIG_DIR
+      git init -q
+      git remote add origin $ORT_CONFIG_REPO_URL
+      ORT_CONFIG_REVISION=${ORT_CONFIG_REVISION:-$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')}
+      git fetch -q --depth 1 origin $ORT_CONFIG_REVISION
+      git checkout -q FETCH_HEAD
+      ORT_CONFIG_REVISION=$(git rev-parse HEAD)
+      cd ..
     - echo "export ORT_CONFIG_REVISION='$ORT_CONFIG_REVISION'" >> vars.env
 
     # Execute ORT's Downloader to fetch the source code for the project to be scanned.

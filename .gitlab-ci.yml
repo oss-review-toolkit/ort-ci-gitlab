@@ -77,6 +77,9 @@ variables:
   ORT_DISABLE_ADVISOR:
     value: ""
     description: "If set to 'true', ORT's advisor will not run (no security vulnerability checks)."
+  ORT_DISABLE_DOWNLOADER:
+    value: "false"
+    description: "If set to 'true', ORT's downloader will not run. For example, the repo might be cloned already if used in a pipeline. Set PROJECT_DIR accordingly to current dir if this is disabled."
   ORT_DISABLE_EVALUATOR:
     value: ""
     description: "If set to 'true', ORT's evaluator will not run (no policy checks)."
@@ -97,6 +100,10 @@ variables:
   ORT_USE_DEV_DB:
     value: "false"
     description: "Set to 'true' to download/upload scanned results from/to development database."
+  PROJECT_DIR:
+    value: "project"
+    description: |
+      "The project download dir." 
   RUNNER_TAG:
     value: docker
     description: |
@@ -155,8 +162,6 @@ ort-scan:
     ORT_HOW_TO_FIX_TEXT_PROVIDER_FILE: "${ORT_CONFIG_DIR}/how-to-fix-text-provider.kts"
 
     ORT_REPORT_FORMATS: "CycloneDx,EvaluatedModel,GitLabLicenseModel,NoticeTemplate,SpdxDocument,StaticHtml,WebApp"
-
-    PROJECT_DIR: "project"
 
     ORT_RESULTS_DIR: "ort-results"
     ORT_RESULTS_ADVISOR_FILE: "${ORT_RESULTS_DIR}/advisor-result.json"
@@ -262,7 +267,11 @@ ort-scan:
     - echo "export ORT_CONFIG_REVISION='$ORT_CONFIG_REVISION'" >> vars.env
 
     # Execute ORT's Downloader to fetch the source code for the project to be scanned.
-    - ./scripts/ort-downloader.sh || { [ $? -eq 1 ] && exit 1; }
+
+    - |
+      if [[ "$ORT_DISABLE_DOWNLOADER" = "false" ]]; then
+        ./scripts/ort-downloader.sh || { [ $? -eq 1 ] && exit 1; }
+      fi
 
     - echo "[DEBUG] env vars"; env
   script:

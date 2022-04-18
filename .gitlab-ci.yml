@@ -97,6 +97,10 @@ variables:
   ORT_USE_DEV_DB:
     value: "false"
     description: "Set to 'true' to download/upload scanned results from/to development database."
+  RUNNER_TAG:
+    value: docker
+    description: |
+      "Runner tag for the gitlab runner, defaults to 'docker'"
   REBUILD_DOCKER_IMAGE: 
     value: "false" 
     description: "Set value to 'true' in order to rebuild the Docker image."
@@ -110,7 +114,7 @@ ort-scan:
     name: "$ORT_DOCKER_IMAGE"
     entrypoint: [""]
   tags:
-    - docker
+    - "$RUNNER_TAG"
   cache:
     key: "${CI_PROJECT_ID}"
     paths:

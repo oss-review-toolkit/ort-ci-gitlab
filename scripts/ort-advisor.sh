@@ -13,7 +13,7 @@ $ORT_CLI \
     --$ORT_LOG_LEVEL \
     --stacktrace \
     advise \
-    -a $ORT_ADVISOR_PROVIDERS
+    -a $ORT_ADVISOR_PROVIDERS \
     -i $ORT_RESULTS_INPUT_FILE \
     -o $ORT_RESULTS_DIR \
     -f JSON

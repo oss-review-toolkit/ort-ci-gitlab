@@ -107,7 +107,7 @@ variables:
   RUNNER_TAG:
     value: docker
     description: |
-      "Runner tag for the gitlab runner, defaults to 'docker'"
+      "Runner tag for the GitLab runner, defaults to 'docker'."
   REBUILD_DOCKER_IMAGE: 
     value: "false" 
     description: "Set value to 'true' in order to rebuild the Docker image."

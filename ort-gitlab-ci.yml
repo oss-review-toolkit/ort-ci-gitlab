@@ -108,6 +108,7 @@ ort-scan:
 #   artifacts:
 #     paths:
 #       - project_to_scan
-# # But GitLab (Enterprise Edition 13.4.3-ee) can't fetch artifacts from downstream job to upstream defined by
+# # But GitLab (v15.2) can't fetch artifacts from downstream job to upstream defined by
 # # the "trigger" keyword. You will have yaml invalid for configuration above.
 # # Once it became available this configuration should be used instead of API approach.
+# See https://gitlab.com/gitlab-org/gitlab/-/issues/284085

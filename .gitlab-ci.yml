@@ -337,10 +337,9 @@ ort-scan:
 
 ort-build-image:
   stage: build
-  image: docker:19.03.12
+  image: docker:latest
   services:
-  - name: docker:19.03.12-dind
-    alias: docker
+  - docker:dind
   variables:
     DOCKER_BUILDKIT: 1
     DOCKER_DRIVER: overlay2

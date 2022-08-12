@@ -163,7 +163,7 @@ ort-scan:
     ORT_RESULTS_GITLAB_LICENSE_MODEL_FILE: "${ORT_RESULTS_DIR}/gl-license-scanning-report.json"
     ORT_RESULTS_HTML_REPORT_FILE: "${ORT_RESULTS_DIR}/ort-results/scan-report.html"
     ORT_RESULTS_NOTICE_SUMMARY_FILE: "${ORT_RESULTS_DIR}/NOTICE_summary"
-    ORT_RESULTS_SCANNER_FILE: "${ORT_RESULTS_DIR}/analyzer-result.json"
+    ORT_RESULTS_SCANNER_FILE: "${ORT_RESULTS_DIR}/scan-result.json"
     ORT_RESULTS_WEB_APP_FILE: "${ORT_RESULTS_DIR}/scan-report-web-app.html"
 
     ORT_SCANCODE_CLI_PARAMS: "--copyright --license --info --strip-root --timeout 300"

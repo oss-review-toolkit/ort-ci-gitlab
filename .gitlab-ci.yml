@@ -75,13 +75,13 @@ variables:
     description: |
       The Git revision of the ORT configuration repository to use.
   ORT_DISABLE_ADVISOR:
-    value: ""
+    value: "false"
     description: "If set to 'true', ORT's advisor will not run (no security vulnerability checks)."
   ORT_DISABLE_EVALUATOR:
-    value: ""
+    value: "false"
     description: "If set to 'true', ORT's evaluator will not run (no policy checks)."
   ORT_DISABLE_SCANNER:
-    value: ""
+    value: "false"
     description: "If set to 'true', ORT's scanner will not run (no copyright holders and licenses scan)."
   ORT_LOG_LEVEL: 
     value: ""

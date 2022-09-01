@@ -125,7 +125,7 @@ ort-scan:
   variables:
     ORT_CLI: "/opt/ort/bin/ort"
 
-    ORT_ADVISOR_PROVIDERS: "OssIndex"
+    ORT_ADVISOR_PROVIDERS: "OSV"
 
     ORT_CLI_CONFIG_FILE: "${CI_PROJECT_DIR}/ort.conf"
 

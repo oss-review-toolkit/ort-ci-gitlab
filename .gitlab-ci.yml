@@ -53,39 +53,53 @@ variables:
       git, mercurial or subversion)
   ORT_CONFIG_FILE:
     value: ""
-    description: "Path to repository configuration file relative to the VCS root. If empty '.ort.yml' is used as default."
+    description: |
+      Path to repository configuration file relative to the VCS root. 
+      By default set to '.ort.yml'.
   ORT_ALLOW_DYNAMIC_VERSIONS:
     value: ""
     description: |
       Set to 'true' only if dynamic dependency versions are allowed (note version ranges specified for dependencies may cause unstable results).
       This field applies only to package managers that support lock files, e.g. NPM.
+      By default set to 'false'.
   DISABLE_SHALLOW_CLONE:
     value: ""
     description: |
       If set to 'true', the full history of the project is cloned. This option works only if VCS_TYPE is 'git'.
-      Check this option only if you know that it is required for your scan.
+      Check this option only if you know that it is required for your scan. By default set to 'false'.
   FAIL_ON_OUTDATED_NOTICE_FILE:
     value: "false"
     description: "If set to 'true', the scan will be considered as failed if generated NOTICE file differs from the one in your repository."
   NOTICE_FILE:
     value: ""
-    description: "Path to open source attribution document relative to the VCS root. If empty 'FOSS_NOTICE' is used as default."
+    description: |
+      Path to open source attribution document relative to the VCS root.
+      By default set to 'FOSS_NOTICE'.
   ORT_CONFIG_REVISION:
     value: ""
     description: |
       The Git revision of the ORT configuration repository to use.
+      By default set to 'main'.
   ORT_DISABLE_ADVISOR:
     value: ""
-    description: "If set to 'true', ORT's advisor will not run (no security vulnerability checks)."
+    description: |
+      If set to 'true', ORT's advisor will not run (no security vulnerability checks).
+      By default set to 'false'.
   ORT_DISABLE_EVALUATOR:
     value: ""
-    description: "If set to 'true', ORT's evaluator will not run (no policy checks)."
+    description: |
+      If set to 'true', ORT's evaluator will not run (no policy checks).
+      By default set to 'true'.
   ORT_DISABLE_SCANNER:
     value: ""
-    description: "If set to 'true', ORT's scanner will not run (no copyright holders and licenses scan)."
+    description: |
+      If set to 'true', ORT's scanner will not run (no copyright holders and licenses scan).
+      By default set to 'false'.
   ORT_LOG_LEVEL: 
     value: ""
-    description: "Set value to 'debug' to see additional debug output to help tracking down errors. If empty 'performance' is used as default."
+    description: |
+      Set value to 'debug' to see additional debug output to help tracking down errors. 
+      By default set to 'performance'.
   ORT_REVISION:
     value: ""
     description: |

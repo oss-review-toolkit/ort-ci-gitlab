@@ -345,7 +345,7 @@ ort-build-image:
     DOCKER_BUILDKIT: 1
     DOCKER_DRIVER: overlay2
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" "$CI_REGISTRY" --password-stdin
   script:
     - export ORT_DOCKERFILE_FILE=${ORT_DOCKERFILE_FILE:-"./Dockerfile"}
     - export ORT_SCANCODE_VERSION=${ORT_SCANCODE_VERSION:-"30.1.0"}

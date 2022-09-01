@@ -99,7 +99,7 @@ variables:
     value: ""
     description: |
       Set value to 'debug' to see additional debug output to help tracking down errors. 
-      By default set to 'performance'.
+      By default set to 'info'.
   ORT_REVISION:
     value: ""
     description: |

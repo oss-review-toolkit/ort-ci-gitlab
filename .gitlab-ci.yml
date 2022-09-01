@@ -347,6 +347,7 @@ ort-build-image:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
+    - export ORT_DOCKERFILE_FILE=${ORT_DOCKERFILE_FILE:-"./Dockerfile"}
     - export ORT_SCANCODE_VERSION=${ORT_SCANCODE_VERSION:-"30.1.0"}
     - apk add --no-cache git
     - |
@@ -375,7 +376,7 @@ ort-build-image:
       --build-arg ORT_URL="$ORT_URL"
       --build-arg BUILDKIT_INLINE_CACHE=1
       --build-arg SCANCODE_VERSION="$ORT_SCANCODE_VERSION"
-      -f ./Dockerfile .
+      -f $ORT_DOCKERFILE_FILE .
     - docker push $CI_REGISTRY_IMAGE/ort:$ORT_REVISION
     - docker push $CI_REGISTRY_IMAGE/ort:$MAIN_TAG
     - cd ..
@@ -386,7 +387,7 @@ ort-build-image:
       --tag $CI_REGISTRY_IMAGE/ort-custom:$MAIN_TAG
       --build-arg ORT_DOCKER_IMAGE="${CI_REGISTRY_IMAGE}/ort:latest"
       --build-arg BUILDKIT_INLINE_CACHE=1
-      -f ./Dockerfile .
+      -f $ORT_DOCKERFILE_FILE .
     - docker push $CI_REGISTRY_IMAGE/ort-custom:$ORT_REVISION
     - docker push $CI_REGISTRY_IMAGE/ort-custom:$MAIN_TAG
   rules:

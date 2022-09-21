@@ -4,9 +4,11 @@
 # against customizable policy rules.
 
 if [[ "$ORT_DISABLE_SCANNER" = "true" ]]; then
-    ORT_RESULTS_INPUT_FILE=$ORT_RESULTS_ANALYZER_FILE
-elif [[ "$ORT_DISABLE_ADVISOR" = "false" ]]; then
-    ORT_RESULTS_INPUT_FILE=$ORT_RESULTS_ADVISOR_FILE
+    if [[ "$ORT_DISABLE_ADVISOR" = "true" ]]; then
+        ORT_RESULTS_INPUT_FILE=$ORT_RESULTS_ANALYZER_FILE
+    else
+        ORT_RESULTS_INPUT_FILE=$ORT_RESULTS_ADVISOR_FILE
+    fi
 else
     ORT_RESULTS_INPUT_FILE=$ORT_RESULTS_SCANNER_FILE
 fi

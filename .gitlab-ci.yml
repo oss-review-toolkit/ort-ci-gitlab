@@ -355,19 +355,16 @@ ort-scan:
 
 ort-build-image:
   stage: build
-  image: docker:19.03.12
+  image: docker:20.10.18-git
   services:
-  - name: docker:19.03.12-dind
-    alias: docker
+  - docker:20.10.18-dind
   variables:
     DOCKER_BUILDKIT: 1
     DOCKER_DRIVER: overlay2
   before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" "$CI_REGISTRY" --password-stdin
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - export ORT_DOCKERFILE_FILE=${ORT_DOCKERFILE_FILE:-"./Dockerfile"}
     - export ORT_SCANCODE_VERSION=${ORT_SCANCODE_VERSION:-"30.1.0"}
-    - apk add --no-cache git
     - |
       if [[ -z "$ORT_REVISION" ]]; then
         echo "Building the vanilla ORT docker image 'ort'..."
@@ -378,15 +375,15 @@ ort-build-image:
         echo "Building the ORT docker image 'ort' based on commit ${ORT_REVISION}..."
         mkdir ort
         cd ort
-        git config --global init.defaultBranch master
+        git config --global init.defaultBranch main
         git init
         git remote add origin $ORT_URL
         git fetch --depth 1 origin $ORT_REVISION
         git checkout FETCH_HEAD
         ORT_REVISION=$(git rev-parse --short HEAD)
       fi
-    - if [[ "$CI_DEFAULT_BRANCH" == "$CI_COMMIT_REF_NAME" ]]; then MAIN_TAG=latest; else MAIN_TAG="$CI_COMMIT_REF_NAME"; fi
-    - docker build
+    - if [[ "$CI_DEFAULT_BRANCH" == "$CI_COMMIT_REF_NAME" ]]; then MAIN_TAG=latest; else MAIN_TAG="$CI_COMMIT_SHORT_SHA"; fi
+    - docker buildx build
       --cache-from $CI_REGISTRY_IMAGE/ort:latest
       --tag $CI_REGISTRY_IMAGE/ort:$ORT_REVISION
       --tag $CI_REGISTRY_IMAGE/ort:$MAIN_TAG
@@ -394,23 +391,27 @@ ort-build-image:
       --build-arg ORT_URL="$ORT_URL"
       --build-arg BUILDKIT_INLINE_CACHE=1
       --build-arg SCANCODE_VERSION="$ORT_SCANCODE_VERSION"
-      -f $ORT_DOCKERFILE_FILE .
+      -f ./Dockerfile .
     - docker push $CI_REGISTRY_IMAGE/ort:$ORT_REVISION
     - docker push $CI_REGISTRY_IMAGE/ort:$MAIN_TAG
     - cd ..
     - echo "Building the custom ORT docker image 'ort-custom'..."
-    - docker build
+    - docker buildx build
       --cache-from $CI_REGISTRY_IMAGE/ort-custom:latest
       --tag $CI_REGISTRY_IMAGE/ort-custom:$ORT_REVISION
       --tag $CI_REGISTRY_IMAGE/ort-custom:$MAIN_TAG
       --build-arg ORT_DOCKER_IMAGE="${CI_REGISTRY_IMAGE}/ort:latest"
       --build-arg BUILDKIT_INLINE_CACHE=1
-      -f $ORT_DOCKERFILE_FILE .
+      --platform linux/amd64
+      -f ./Dockerfile .
     - docker push $CI_REGISTRY_IMAGE/ort-custom:$ORT_REVISION
     - docker push $CI_REGISTRY_IMAGE/ort-custom:$MAIN_TAG
   rules:
     - if: $CI_PIPELINE_SOURCE == "web" && $REBUILD_DOCKER_IMAGE == "true"
     - if: $CI_PIPELINE_SOURCE == "schedule" && $REBUILD_DOCKER_IMAGE == "true"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+      allow_failure: true
 
 # Deploy ort-scan dashboard to GitLab pages
 pages:

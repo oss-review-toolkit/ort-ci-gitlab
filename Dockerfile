@@ -3,24 +3,22 @@ ARG ORT_DOCKER_IMAGE=registry.gitlab.com/oss-review-toolkit/ort-gitlab-ci/ort:la
 
 FROM $ORT_DOCKER_IMAGE
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        # Platform tools
-        build-essential \
+# If you execute privileged operations
+USER root
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get -qq update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends \
         gettext-base \
         jq \
         # 32-bit compatibility (e.g. required for Android SDK)
         lib32z1 \
         # Languages
         mono-complete \
-        php-cli \
-        php-curl \
-        php-mbstring \
-        php-xml \
-        rustc && \
-    # Make the Android SDK writable for non-root-users to allow dynamic SDK installation.
-    chmod a+w $ANDROID_HOME -R && \
     # Clean-up
-    rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
+
+USER ort
 
 ENTRYPOINT []

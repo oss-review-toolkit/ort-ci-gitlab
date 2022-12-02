@@ -145,7 +145,7 @@ ort-scan:
 
     ORT_ADVISOR_PROVIDERS: "OSV"
 
-    ORT_CLI_CONFIG_FILE: "${CI_PROJECT_DIR}/ort.conf"
+    ORT_CLI_CONFIG_FILE: "${CI_PROJECT_DIR}/config.yml"
 
     ORT_CONFIG_DIR: "ort-configuration"
     ORT_CONFIG_COPYRIGHT_GARBAGE_FILE: "${ORT_CONFIG_DIR}/copyright-garbage.yml"

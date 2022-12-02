@@ -1,15 +1,14 @@
 #!/bin/bash -e
 
-# Create HOCON configuration file used by ORT.
+# Create the YAML configuration file used by ORT.
 
 ORT_POSTGRES=$(cat <<-END
-postgresStorage {
-  url = "$ORT_DB_URL"
-  schema = "public"
-  username = "$ORT_POSTGRES_USERNAME"
-  password = "$ORT_POSTGRES_PASSWORD"
-  sslmode = "require"
-}
+postgresStorage:
+  url: '$ORT_DB_URL'
+  schema: 'public'
+  username: '$ORT_POSTGRES_USERNAME'
+  password: '$ORT_POSTGRES_PASSWORD'
+  sslmode: 'require'
 END
 )
 
@@ -29,4 +28,4 @@ else
   ORT_POSTGRES=""
 fi
 
-envsubst < $CI_PROJECT_DIR/scripts/ort.conf.tmpl > $ORT_CLI_CONFIG_FILE
+envsubst < $CI_PROJECT_DIR/scripts/config.yml.template > $ORT_CLI_CONFIG_FILE

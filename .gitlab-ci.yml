@@ -15,7 +15,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # License-Filename: LICENSE
 
-stages: 
+stages:
   - build
   - deploy
   - ort-scan
@@ -31,13 +31,13 @@ variables:
     description: |
       Project version number or release name (use the version from package metadata, not VCS revision).
       By default, the Git short SHA is used.
-  VCS_TYPE: 
+  VCS_TYPE:
     value: "git"
     description: "Identifier of the project version control system (git, git-repo, mercurial or subversion)."
-  VCS_URL: 
+  VCS_URL:
     value: ""
     description: "VCS URL (clone URL) of project to scan."
-  VCS_REVISION: 
+  VCS_REVISION:
     value: ""
     description: |
       SHA1 or tag to scan (not branch names, because they can move). If VCS_TYPE is 'git-repo',
@@ -45,16 +45,16 @@ variables:
   VCS_PATH:
     value: ""
     description: |
-      Leave this field empty unless one of the following special cases applies: project VCS_TYPE is 
+      Leave this field empty unless one of the following special cases applies: project VCS_TYPE is
       git-repo - specify path to repo manifest file (e.g. olympia.xml,
-      note VCS_URL must point to a manifest repository) 
+      note VCS_URL must point to a manifest repository)
       you require sparse checkout - specify repository sub-path to download and scan
       (e.g. projects/gradle/, note sparse checkout is possible only for VCS_TYPE
       git, mercurial or subversion)
   ORT_CONFIG_FILE:
     value: ""
     description: |
-      Path to repository configuration file relative to the VCS root. 
+      Path to repository configuration file relative to the VCS root.
       By default set to '.ort.yml'.
   ORT_ALLOW_DYNAMIC_VERSIONS:
     value: ""
@@ -95,10 +95,10 @@ variables:
     description: |
       If set to 'true', ORT's scanner will not run (no copyright holders and licenses scan).
       By default set to 'false'.
-  ORT_LOG_LEVEL: 
+  ORT_LOG_LEVEL:
     value: ""
     description: |
-      Set value to 'debug' to see additional debug output to help tracking down errors. 
+      Set value to 'debug' to see additional debug output to help tracking down errors.
       By default set to 'info'.
   ORT_REVISION:
     value: ""
@@ -111,8 +111,8 @@ variables:
   ORT_USE_DEV_DB:
     value: "false"
     description: "Set to 'true' to download/upload scanned results from/to development database."
-  REBUILD_DOCKER_IMAGE: 
-    value: "false" 
+  REBUILD_DOCKER_IMAGE:
+    value: "false"
     description: "Set value to 'true' in order to rebuild the Docker image."
   ORT_URL: https://github.com/oss-review-toolkit/ort.git
   FF_SCRIPT_SECTIONS: "true"
@@ -120,7 +120,7 @@ variables:
 
 ort-scan:
   stage: ort-scan
-  image: 
+  image:
     name: "$ORT_DOCKER_IMAGE"
     entrypoint: [""]
   tags:
@@ -227,33 +227,33 @@ ort-scan:
 
     # Create ~/.netrc file if NETRC_URL is set.
     - |
-      if [[ ! -z "$NETRC_URL" ]]; then 
-        ./scripts/setup-netrc.sh 
+      if [[ ! -z "$NETRC_URL" ]]; then
+        ./scripts/setup-netrc.sh
       fi
 
      # Create ~/.ivy2/.credentials file if IVY_CREDS_URL is set.
     - |
-      if [[ ! -z "$IVY_CREDS_URL" ]]; then 
-        ./scripts/setup-ivy-credentials.sh 
+      if [[ ! -z "$IVY_CREDS_URL" ]]; then
+        ./scripts/setup-ivy-credentials.sh
       fi
 
     # Workaround for maven cache.
     - |
-      if [[ -d "$MAVEN_REPO_LOCAL" ]]; then 
+      if [[ -d "$MAVEN_REPO_LOCAL" ]]; then
         mkdir -p ${HOME}/.m2/repository/
         mv ${MAVEN_REPO_LOCAL}/* ${HOME}/.m2/repository/
       fi
 
     # Workaround for go cache.
     - |
-      if [[ -d "$GO_CACHE_LOCAL" ]]; then 
+      if [[ -d "$GO_CACHE_LOCAL" ]]; then
         mkdir -p ${GOPATH}/pkg/mod
         mv ${GO_CACHE_LOCAL}/* ${GOPATH}/pkg/mod/
       fi
 
     - |
-      if [[ ! -z "$ORT_REVISION" ]]; then 
-        ./scripts/setup-ort.sh 
+      if [[ ! -z "$ORT_REVISION" ]]; then
+        ./scripts/setup-ort.sh
         export ORT_CLI="$CI_PROJECT_DIR/bin/ort"
         export ORTH="$CI_PROJECT_DIR/bin/orth"
       fi
@@ -316,18 +316,18 @@ ort-scan:
 
     # Workaround for maven cache.
     - |
-      if [[ -d "${HOME}/.m2/repository/" ]]; then 
+      if [[ -d "${HOME}/.m2/repository/" ]]; then
         mkdir -p $MAVEN_REPO_LOCAL
         mv -f ${HOME}/.m2/repository/* $MAVEN_REPO_LOCAL
       fi
 
     # Workaround for go cache.
     - |
-      if [[ -d "${GOPATH}/pkg/mod/" ]]; then 
+      if [[ -d "${GOPATH}/pkg/mod/" ]]; then
         mkdir -p ${GO_CACHE_LOCAL}
         mv ${GOPATH}/pkg/mod/* ${GO_CACHE_LOCAL}
       fi
-    
+
     - export JOB_FINISHED_AT=$(date +"%Y-%m-%dT%H:%M:%S%z")
 
     # Create metadata.json which can be used to reproduce the scan
@@ -365,7 +365,7 @@ ort-build-image:
     - export ORT_SCANCODE_VERSION=${ORT_SCANCODE_VERSION:-"30.1.0"}
     - apk add --no-cache git
     - |
-      if [[ -z "$ORT_REVISION" ]]; then 
+      if [[ -z "$ORT_REVISION" ]]; then
         echo "Building the vanilla ORT docker image 'ort'..."
         git clone --depth 1 --shallow-submodules --recurse-submodules $ORT_URL
         cd ort
@@ -414,7 +414,7 @@ pages:
   image: node:lts
   tags:
     - docker
-  script: 
+  script:
     - cd dashboard
     - yarn install
     - yarn build
@@ -424,7 +424,7 @@ pages:
   rules:
     - if: $CI_PIPELINE_SOURCE == "web" && $DEPLOY_PAGES == "true"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" && "$CI_COMMIT_REF_NAME" == "$CI_DEFAULT_BRANCH"
-      changes: 
+      changes:
       - dashboard/**/*
   artifacts:
     paths:

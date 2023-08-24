@@ -94,7 +94,7 @@ ort-scan:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 ```
 
-3. Set `ORT_PROJECT_ID` in [ort-scan variables][gitlab-variables] to the project ID of your mirror of this repository, its value can be found under *Settings > General*.
+3. Set `ORT_GITLAB_CI_PROJECT_ID` in [ort-scan variables][gitlab-variables] to the project ID of your mirror of this repository, its value can be found under *Settings > General*.
 4. Optionally, you can define the following [ort-scan variables][gitlab-variables]:
 
 - `DISABLE_SHALLOW_CLONE`: If set to 'true', the full history of the project is cloned. This option works only if VCS_TYPE is 'git'

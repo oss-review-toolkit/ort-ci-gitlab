@@ -1,0 +1,445 @@
+---
+# Copyright (C) 2020 The ORT Project Authors
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+# License-Filename: LICENSE
+
+.ort-scan:
+  image:
+    name: ${ORT_DOCKER_IMAGE}
+    entrypoint: [""]
+  cache:
+    key: ${CI_PROJECT_ID}
+    paths:
+      - cache/.m2/repository
+      - cache/.go/pkg/mod
+      - cache/pip
+      - cache/.gradle
+      - cache/yarn
+      - cache/node_modules
+      - cache/ivy2/cache
+      - cache/sbt
+  variables:
+    ORT_DOCKER_IMAGE: "ghcr.io/alliander-opensource/ort-container:latest"
+    ORT_RESULTS_PATH: "${CI_PROJECT_DIR}/ort-results"
+
+    # GitLab will not cache things (see https://gitlab.com/gitlab-org/gitlab/-/issues/14151) outside the build's working
+    # directory (e.g., /builds/{user}/geometry), but luckily we can move Maven repository around.
+    MAVEN_REPO_LOCAL: "${CI_PROJECT_DIR}/cache/.m2/repository"
+    GO_CACHE_LOCAL: "${CI_PROJECT_DIR}/cache/.go/pkg/mod"
+    PIP_CACHE_DIR: "${CI_PROJECT_DIR}/cache/pip"
+    GRADLE_USER_HOME: "${CI_PROJECT_DIR}/cache/.gradle"
+    YARN_CACHE_FOLDER: "${CI_PROJECT_DIR}/cache/yarn"
+    NODE_PATH: "${CI_PROJECT_DIR}/cache/node_modules"
+    SBT_OPTS: "-Dsbt.global.base=${CI_PROJECT_DIR}/cache/sbt -Dsbt.ivy.home=${CI_PROJECT_DIR}/cache/ivy2 -Divy.home=${CI_PROJECT_DIR}/cache/ivy2"
+  script:
+    - export ORT_SCAN_STARTED_AT=$(date +"%Y-%m-%dT%H:%M:%S%z")
+
+    # Set safe directory to resolve Git 'fatal: detected dubious ownership in repository' error message.
+    - git config --global safe.directory '*'
+
+    # GITLAB_USER_NAME is UPPERCASED in order to unmask it in GitLab logs.
+    - export TRIGGERER=${UPSTREAM_PIPELINE_URL:-"${GITLAB_USER_NAME^^} manually"}
+    - echo "Started by $TRIGGERER"
+
+    # Workaround for maven cache.
+    - |
+      if [[ -d "$MAVEN_REPO_LOCAL" ]]; then
+        mkdir -p ${HOME}/.m2/repository/
+        mv ${MAVEN_REPO_LOCAL}/* ${HOME}/.m2/repository/
+      fi
+
+    # Workaround for go cache.
+    - |
+      if [[ -d "$GO_CACHE_LOCAL" ]]; then
+        mkdir -p ${GOPATH}/pkg/mod
+        mv ${GO_CACHE_LOCAL}/* ${GOPATH}/pkg/mod/
+      fi
+
+    - echo -e "\e[1;33m Initializing ORT in GitLab... "
+
+    # Setting default values for various variables.
+    - |  
+      export ORT_DATA_PATH=${HOME}/${ORT_DATA_DIR_NAME:-".ort"}
+      export DISABLE_SHALLOW_CLONE=${DISABLE_SHALLOW_CLONE:-"false"}
+      export FAIL_ON_OUTDATED_NOTICE_FILE=${FAIL_ON_OUTDATED_NOTICE_FILE:-"false"}
+      export NOTICE_FILE=${NOTICE_FILE:-"FOSS_NOTICE"}
+      export ORT_ADVISORS=${ADVISORS:-"OSV"}
+      export ORT_ALLOW_DYNAMIC_VERSIONS=${ALLOW_DYNAMIC_VERSIONS:-"false"}
+      export ORT_CLI="/opt/ort/bin/ort"
+      export ORT_CLI_ARGS=${ORT_CLI_ARGS:-"-P ort.forceOverwrite=true --stacktrace"}
+      export ORT_CONFIG_PATH=${ORT_CONFIG_PATH:-"${ORT_DATA_PATH}/config"}
+      export ORT_CONFIG_VCS_REVISION=${ORT_CONFIG_REVISION:-"main"}
+      export ORT_CONFIG_VCS_URL=${ORT_CONFIG_REPOSITORY:-"https://github.com/oss-review-toolkit/ort-config.git"}
+      export ORT_DISABLE_ADVISOR=${ORT_DISABLE_ADVISOR:-"false"}
+      export ORT_DISABLE_EVALUATOR=${ORT_DISABLE_EVALUATOR:-"false"}
+      export ORT_DISABLE_SCANNER=${ORT_DISABLE_SCANNER:-"true"}
+      export ORT_LOG_LEVEL=${ORT_LOG_LEVEL:-"warn"}
+      export ORT_RESULTS_PATH=${ORT_RESULTS_PATH:-"${ORT_DATA_PATH}/ort-results"}
+      export ORT_REPORT_FORMATS=${REPORT_FORMATS:-"CycloneDx,SpdxDocument,WebApp"}
+      export ORT_RESULTS_ADVISOR_PATH="${ORT_RESULTS_PATH}/advisor-result.json"
+      export ORT_RESULTS_ANALYZER_PATH="${ORT_RESULTS_PATH}/analyzer-result.json"
+      export ORT_RESULTS_CURRENT_PATH="${ORT_RESULTS_PATH}/current-result.json"
+      export ORT_RESULTS_EVALUATED_MODEL_PATH="${ORT_RESULTS_PATH}/evaluated-model.json"
+      export ORT_RESULTS_EVALUATOR_PATH="${ORT_RESULTS_PATH}/evaluation-result.json"
+      export ORT_RESULTS_HTML_REPORT_PATH="${ORT_RESULTS_PATH}/ort-results/scan-report.html"
+      export ORT_RESULTS_SCANNER_PATH="${ORT_RESULTS_PATH}/scan-result.json"
+      export ORT_RESULTS_SBOM_CYCLONE_XML_PATH="${ORT_RESULTS_PATH}/bom.cyclonedx.xml"
+      export ORT_RESULTS_SBOM_SPDX_JSON_PATH="${ORT_RESULTS_PATH}/bom.spdx.json"
+      export ORT_RESULTS_SBOM_SPDX_YML_PATH="${ORT_RESULTS_PATH}/bom.spdx.yml"
+      export ORT_RESULTS_WEB_APP_PATH="${ORT_RESULTS_PATH}/scan-report-web-app.html"
+      export ORT_RUN_COMMANDS=${RUN:-"labels,analyzer,evaluator,advisor,reporter"}
+      export ORT_VERSION=$(ort --version)
+      export POSTGRES_PASSWORD=${POSTGRES_PASSWORD-:$DB_PASSWORD}
+      export POSTGRES_SCHEMA=${POSTGRES_SCHEMA-:$DB_SCHEMA}
+      export POSTGRES_URL=${POSTGRES_URL-:$DB_URL}
+      export POSTGRES_USERNAME=${POSTGRES_USERNAME-:$DB_USERNAME}
+
+      if [ ! -n "${VCS_TYPE+x}" ] && \
+        [ ! -n "${VCS_URL+x}" ] && \
+        [ ! -n "${VCS_REVISION}" ] && \
+        [ ! -n "${VCS_PATH}" ]
+      then
+        # Scan already cloned repository under $CI_PROJECT_DIR:
+        export PROJECT_VCS_TYPE="git"
+        export PROJECT_VCS_URL="ssh://git@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        export PROJECT_VCS_REVISION="${CI_COMMIT_SHA}"
+        export PROJECT_VCS_PATH=""
+        export PROJECT_PATH="${CI_PROJECT_DIR}"
+      else
+        # Scan specified repository:
+        export PROJECT_VCS_TYPE=${VCS_TYPE:-"git"}
+        export PROJECT_VCS_URL=${VCS_URL:-""}
+        export PROJECT_VCS_REVISION=${VCS_REVISION:-""}
+        export PROJECT_VCS_PATH=${VCS_PATH:-""}
+        export PROJECT_PATH="${HOME}/project"
+      fi  
+
+      export PROJECT_VCS_REPOSITORY_NAME=$(echo $PROJECT_VCS_URL | sed -E 's/.*\/(.*)\.git/\1/')
+      export SW_NAME=${SW_NAME:-"$PROJECT_VCS_REPOSITORY_NAME"}
+      # Remove all special characters and whitespace from software name as some tools cannot handle them.
+      export SW_NAME_SAFE=$(echo ${SW_NAME} | sed -e 's/\s/-/g' -e 's/[^[:alnum:]_-]//g' -e 's/--/-/g' -e 's/\([A-Z]\)/\L\1/g')
+      export SW_VERSION=${SW_VERSION:-"${VCS_REVISION:0:7}"}
+
+    # Creating required directories within user home directory.
+    - |
+      mkdir -p ${HOME}/.cache/scancode-tk/; chmod -R aug+w ${HOME}/.cache/ || :
+      mkdir -p ${HOME}/.config/jgit/; chmod -R aug+w ${HOME}/.config/ || :
+      mkdir -p ${ORT_DATA_PATH}/{cache,config,ort-results,scanner/archive/,scanner/provenance/}; chmod -R aug+w ${ORT_DATA_PATH}/ || :
+      mkdir -p ${PROJECT_PATH}/; chmod -R aug+w ${PROJECT_PATH}/ || :
+
+    # Set up ORT configuration repository.
+    - |
+      if [[ -z "$(ls -A ${ORT_CONFIG_PATH})" ]];  then
+        ORT_CONFIG_VCS_REVISION=${ORT_CONFIG_VCS_REVISION:-$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')}
+        echo -e "\e[1;33m Retrieving ORT config from ${ORT_CONFIG_VCS_URL}... "
+        cd $ORT_CONFIG_PATH
+        git init -q
+        git remote add origin $ORT_CONFIG_VCS_URL
+        git fetch -q --depth 1 origin $ORT_CONFIG_VCS_REVISION
+
+        git checkout -q FETCH_HEAD
+        cd -
+      fi
+      cd $ORT_CONFIG_PATH
+      [[ -d "${ORT_CONFIG_PATH}/.git" ]] \
+        && export ORT_CONFIG_VCS_URL=$(git config remote.origin.url) \
+        && export ORT_CONFIG_VCS_REVISION=$(git rev-parse HEAD)      
+      cd -
+
+    # Generate ORT global configuration if not found and PostgreSQL is used.
+    - |
+      if [[ (! -z "${ORT_CONFIG_PATH}/config.yml") && (-n "${POSTGRES_URL}") ]]; then
+      cat << EOF > ${ORT_CONFIG_PATH}/config.yml
+      ort:
+        packageCurationProviders:
+          - type: DefaultFile
+          - type: DefaultDir
+          - type: OrtConfig
+            enabled: false
+        scanner:
+          archive:
+            enabled: true
+            postgresStorage:
+              connection:
+                url: "${POSTGRES_URL}"
+                schema: "${POSTGRES_SCHEMA}"
+                username: "${POSTGRES_USERNAME}"
+                password: "${POSTGRES_PASSWORD}"
+                sslmode: "disable"
+                parallelTransactions: 5
+              type: "PROVENANCE_BASED"
+          createMissingArchives: true
+          detectedLicenseMapping: {}
+          fileListStorage:
+            postgresStorage:
+              connection:
+                url: "${POSTGRES_URL}"
+                schema: "${POSTGRES_SCHEMA}"
+                username: "${POSTGRES_USERNAME}"
+                password: "${POSTGRES_PASSWORD}"
+                sslmode: "disable"
+                parallelTransactions: 5
+          storages:
+            postgres:
+              connection:
+                url: "${POSTGRES_URL}"
+                schema: "${POSTGRES_SCHEMA}"
+                username: "${POSTGRES_USERNAME}"
+                password: "${POSTGRES_PASSWORD}"
+                sslmode: "disable"
+                parallelTransactions: 5
+              type: "PROVENANCE_BASED"
+          storageReaders:
+            - "postgres"
+          storageWriters:
+            - "postgres"
+          ignorePatterns:
+            - "**/NOTICE"
+            - "**/META-INF/DEPENDENCIES"
+          provenanceStorage:
+            postgresStorage:
+              connection:
+                url: "${POSTGRES_URL}"
+                schema: "${POSTGRES_SCHEMA}"
+                username: "${POSTGRES_USERNAME}"
+                password: "${POSTGRES_PASSWORD}"
+                sslmode: "disable"
+                parallelTransactions: 5
+              type: "PROVENANCE_BASED"
+        severeIssueThreshold: "ERROR"
+        severeRuleViolationThreshold: "ERROR"
+      EOF
+      elif [[ ! -z "${ORT_CONFIG_PATH}/config.yml" ]]; then
+      cat << EOF > ${ORT_CONFIG_PATH}/config.yml
+      ort:
+        packageCurationProviders:
+          - type: DefaultFile
+          - type: DefaultDir
+          - type: OrtConfig
+            enabled: false
+      EOF
+      fi
+    
+    # Generate labels to be passed as arguments to ORT Analyzer. 
+    # Labels can be used track scan related info or execute policy rules for specific product, delivery or organization.
+    - |
+      if [[ ${ORT_RUN_COMMANDS} == *"labels"* ]]; then
+        echo -e "\e[1;33m Compute ORT labels... "
+
+        ORT_CLI_ANALYZE_ARGS="\
+          -l ci-url=${CI_PIPELINE_URL} \
+          -l ci-actor=${GITLAB_USER_LOGIN} \
+          -l ci-event-name=${CI_PIPELINE_SOURCE} \
+          -l ci-date=$(date +"%Y-%m-%d") ${ORT_CLI_ANALYZE_ARGS}"
+
+        [[ -n "${ORT_ALLOW_DYNAMIC_VERSIONS}" ]] && ORT_CLI_ANALYZE_ARGS="-l allow-dynamic-versions=${ORT_ALLOW_DYNAMIC_VERSIONS} ${ORT_CLI_ANALYZE_ARGS}"
+        [[ -n "${ORT_CONFIG_VCS_REVISION}" ]] && ORT_CLI_ANALYZE_ARGS="-l ort-config-revision=${ORT_CONFIG_VCS_REVISION} ${ORT_CLI_ANALYZE_ARGS}"
+        [[ -n "${ORT_CONFIG_VCS_URL}" ]] && ORT_CLI_ANALYZE_ARGS="-l ort-config-repository=${ORT_CONFIG_VCS_URL} ${ORT_CLI_ANALYZE_ARGS}"
+        ORT_CLI_ANALYZE_ARGS="-l sw-version=${SW_VERSION} -l sw-name=${SW_NAME_SAFE} ${ORT_CLI_ANALYZE_ARGS}"
+      fi
+
+    # Include repository configuration file (.ort.yml) if found in ORT CLI parameters.
+    - |
+      if [[ -s "${ORT_YML_PATH}" ]]; then
+        ORT_CLI_ANALYZE_ARGS="--repository-configuration-file ${ORT_YML_PATH} ${ORT_CLI_ANALYZE_ARGS}"
+        ORT_CLI_EVALUATE_ARGS="--repository-configuration-file ${ORT_YML_PATH} ${ORT_CLI_EVALUATE_ARGS}"
+        ORT_CLI_REPORT_ARGS="--repository-configuration-file ${ORT_YML_PATH} ${ORT_CLI_REPORT_ARGS}"
+      elif [[ ! -z "${ORT_YML_PATH}" ]]; then
+        echo -e "\e[1;31m File ${ORT_YML_PATH} not found!."
+      fi
+    
+    - |
+      export ORT_CLI_ANALYZE_ARGS ORT_CLI_EVALUATE_ARGS ORT_CLI_REPORT_ARGS
+
+    # Run ORT's Downloader to retrieve the source code for the project to be scanned.
+    - |
+      if [[ "$PROJECT_PATH" = "$CI_PROJECT_DIR" ]]; then
+        echo -e "\e[1;33m Not running ORT Downloader, as the already cloned sources are to be analyzed..."
+      else
+        echo -e "\e[1;33m Running ORT Downloader to download project to scan... "
+        echo -e "\e[1;33m ${PROJECT_VCS_TYPE} project revision ${PROJECT_VCS_REVISION} located at ${PROJECT_VCS_URL}... "
+
+        ${ORT_CLI} \
+        --${ORT_LOG_LEVEL} \
+        ${ORT_CLI_ARGS} \
+        download \
+        -o "${PROJECT_PATH}" \
+        --vcs-type "${PROJECT_VCS_TYPE}" \
+        --project-url "${PROJECT_VCS_URL}" \
+        --vcs-revision "${PROJECT_VCS_REVISION}" \
+        --project-name "${SW_NAME_SAFE}" \
+          || ORT_CLI_DOWNLOAD_EXIT_CODE=$? \
+          && export ORT_CLI_DOWNLOAD_EXIT_CODE="${ORT_CLI_DOWNLOAD_EXIT_CODE:-0}"
+        
+        [[ ${ORT_CLI_DOWNLOAD_EXIT_CODE} -eq 1 ]] \
+          && echo -e "\e[1;31m Unable to retrieve project sources from ${VCS_URL}." \
+          && exit 1
+      fi
+  
+    # Run ORT's Analyzer to determine the dependencies used by the project and their metadata.
+    - |
+      echo -e "\e[1;33m Running ORT Analyzer... "
+      ${ORT_CLI} \
+      --${ORT_LOG_LEVEL} \
+      -P ort.analyzer.allowDynamicVersions=${ORT_ALLOW_DYNAMIC_VERSIONS} \
+      ${ORT_CLI_ARGS} \
+      analyze \
+      -i ${PROJECT_PATH} \
+      -o ${ORT_RESULTS_PATH} \
+      -f JSON \
+      ${ORT_CLI_ANALYZE_ARGS} \
+        || ORT_CLI_ANALYZE_EXIT_CODE=$? \
+        && export ORT_CLI_ANALYZE_EXIT_CODE="${ORT_CLI_ANALYZE_EXIT_CODE:-0}" \
+        && printenv >> vars.env
+
+      [[ -f ${ORT_RESULTS_ANALYZER_PATH} ]] \
+        && ln -frs $ORT_RESULTS_ANALYZER_PATH $ORT_RESULTS_CURRENT_PATH \
+        || echo -e "\e[1;31m File $ORT_RESULTS_ANALYZER_PATH not found."
+      
+      [[ ${ORT_CLI_ANALYZE_EXIT_CODE} -eq 1 ]] && exit 1
+
+    # Run ORT's Scanner to use configured source code scanners to detect license and copyright findings.
+    - |
+      if [[ ${ORT_RUN_COMMANDS} == *"scanner"* ]]; then
+        echo -e "\e[1;33m Running ORT Scanner... "
+
+        ${ORT_CLI} \
+        --${ORT_LOG_LEVEL} \
+        ${ORT_CLI_ARGS} \
+        scan \
+        -i ${ORT_RESULTS_CURRENT_PATH} \
+        -o ${ORT_RESULTS_PATH} \
+        -f JSON \
+        ${ORT_CLI_SCAN_ARGS} \
+          || ORT_CLI_SCAN_EXIT_CODE=$? \
+          && export ORT_CLI_SCAN_EXIT_CODE="${ORT_CLI_SCAN_EXIT_CODE:-0}" \
+          && printenv >> vars.env
+
+        [[ -f ${ORT_RESULTS_SCANNER_PATH} ]] \
+          && ln -frs $ORT_RESULTS_SCANNER_PATH $ORT_RESULTS_CURRENT_PATH \
+          || echo -e "\e[1;31m File $ORT_RESULTS_SCANNER_PATH not found."
+
+        [[ ${ORT_CLI_SCANNER_EXIT_CODE} -eq 1 ]] && exit 1
+      fi
+
+    # Run ORT's Evaluator to evaluate custom policy rules along with custom license classifications against the data gathered
+    # in preceding ORT stages and returns a list of policy violations (e.g. flags license or vulnerability findings).
+    - |
+      if [[ ${ORT_RUN_COMMANDS} == *"evaluator"* ]]; then
+        echo -e "\e[1;33m Running ORT Evaluator... "
+
+        ${ORT_CLI} \
+        --${ORT_LOG_LEVEL} \
+        ${ORT_CLI_ARGS} \
+        evaluate \
+        -i ${ORT_RESULTS_CURRENT_PATH} \
+        -o ${ORT_RESULTS_PATH} \
+        -f JSON \
+        ${ORT_CLI_EVALUATE_ARGS} \
+          || ORT_CLI_EVALUATE_EXIT_CODE=$? \
+          && export ORT_CLI_EVALUATE_EXIT_CODE="${ORT_CLI_EVALUATE_EXIT_CODE:-0}" \
+          && printenv >> vars.env
+
+        [[ -f ${ORT_RESULTS_EVALUATOR_PATH} ]] \
+          && ln -frs $ORT_RESULTS_EVALUATOR_PATH $ORT_RESULTS_CURRENT_PATH \
+          || echo -e "\e[1;31m File $ORT_RESULTS_EVALUATOR_PATH not found."
+
+        [[ ${ORT_CLI_EVALUATE_EXIT_CODE} -eq 1 ]] && exit 1
+      fi
+
+    # Run ORT's Advisor to retrieve security advisories for used dependencies from configured vulnerability data services.
+    - |
+      if [[ ${ORT_RUN_COMMANDS} == *"advisor"* ]]; then
+        echo -e "\e[1;33m Running ORT Advisor... "
+
+        ${ORT_CLI} \
+        --$ORT_LOG_LEVEL \
+        ${ORT_CLI_ARGS} \
+        advise \
+        -i ${ORT_RESULTS_CURRENT_PATH} \
+        -o ${ORT_RESULTS_PATH} \
+        -a ${ORT_ADVISORS} \
+        -f JSON \
+        ${ORT_CLI_ADVISE_ARGS} \
+          || ORT_CLI_ADVISE_EXIT_CODE=$? \
+          && export ORT_CLI_ADVISE_EXIT_CODE="${ORT_CLI_ADVISE_EXIT_CODE:-0}" \
+          && printenv >> vars.env
+
+        [[ -f ${ORT_RESULTS_ADVISOR_PATH} ]] \
+          && ln -frs $ORT_RESULTS_ADVISOR_PATH $ORT_RESULTS_CURRENT_PATH \
+          || echo -e "\e[1;31m File $ORT_RESULTS_ADVISOR_PATH not found."
+
+        [[ ${ORT_CLI_ADVISE_EXIT_CODE} -eq 1 ]] && exit 1
+      fi
+
+    # Run ORT's Reporter to present scan results in various formats such as visual reports,
+    # Open Source notices or Software Bill-Of-Materials (SBOMs).
+    - |
+      if [[ ${ORT_RUN_COMMANDS} == *"reporter"* ]]; then
+        echo -e "\e[1;33m Running ORT Reporter... "
+
+        $ORT_CLI \
+        --${ORT_LOG_LEVEL} \
+        ${ORT_CLI_ARGS} \
+        report \
+        -i ${ORT_RESULTS_CURRENT_PATH} \
+        -o ${ORT_RESULTS_PATH} \
+        -f $ORT_REPORT_FORMATS \
+        -O SpdxDocument=document.name="${SW_NAME_SAFE}" \
+        ${ORT_CLI_REPORT_ARGS} \
+          || ORT_CLI_REPORT_EXIT_CODE=$? \
+          && export ORT_CLI_REPORT_EXIT_CODE="${ORT_CLI_REPORT_EXIT_CODE:-0}" \
+          && printenv >> vars.env
+
+        [[ ${ORT_CLI_REPORT_CODE} -eq 1 ]] && exit 1
+      fi
+    
+    # Remove job internal use only current-result.json from scan results directory 
+    - |
+      [[ -f ${ORT_RESULTS_CURRENT_PATH} ]] \
+        && rm $ORT_RESULTS_CURRENT_PATH \
+        && unset $ORT_RESULTS_CURRENT_PATH
+
+    # Fail job on policy violations if FAIL_ON variable contains 'violations'.
+    - |
+      if [[ ${FAIL_ON} == *"violations"* && ORT_CLI_EVALUATE_EXIT_CODE -eq 2 ]]; then
+        echo -e "\e[1;31m Failing action as Evaluator exceeded severity threshold... "
+        exit 2
+      fi
+
+    # Fail job on security issues if FAIL_ON variable contains 'issues'.
+    - |
+      if [[ ${FAIL_ON} == *"issues"* && ORT_CLI_ADVISE_EXIT_CODE -eq 2 ]]; then
+        echo -e "\e[1;31m Failing action as Advisor exceeded severity threshold... "
+        exit 2
+      fi
+  timeout: 20 hours
+  after_script:
+    # Workaround for maven cache.
+    - |
+      if [[ -d "${HOME}/.m2/repository/" ]]; then
+        mkdir -p $MAVEN_REPO_LOCAL
+        mv -f ${HOME}/.m2/repository/* $MAVEN_REPO_LOCAL
+      fi
+
+    # Workaround for go cache.
+    - |
+      if [[ -d "${GOPATH}/pkg/mod/" ]]; then
+        mkdir -p ${GO_CACHE_LOCAL}
+        mv ${GOPATH}/pkg/mod/* ${GO_CACHE_LOCAL}
+      fi
+
+    - export ORT_SCAN_FINISHED_AT=$(date +"%Y-%m-%dT%H:%M:%S%z")

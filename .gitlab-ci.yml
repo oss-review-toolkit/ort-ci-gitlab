@@ -1,13 +1,14 @@
-# Copyright (C) 2020-2022 HERE Europe B.V.
+---
+# Copyright (C) 2020 The ORT Project Authors
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an 'AS IS' BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -15,422 +16,147 @@
 # SPDX-License-Identifier: Apache-2.0
 # License-Filename: LICENSE
 
+include:
+  - local: 'templates/ort-scan.yml'
+
 stages:
-  - build
-  - deploy
   - ort-scan
 
 variables:
   SW_NAME:
-    value: ""
     description: |
       Name of project, product or component to be scanned.
       By default the name of the repository is used as shown in its clone URL.
+    value: 'Mime Types'
   SW_VERSION:
-    value: ""
     description: |
       Project version number or release name (use the version from package metadata, not VCS revision).
       By default, the Git short SHA is used.
+    value: '2.1.35'
   VCS_TYPE:
-    value: "git"
     description: |
-      Identifier of the project version control system (git, git-repo, mercurial or subversion).
+      Type of version control system.
+      Accepted values are 'git', 'git-repo', 'mercurial' or 'subversion'.
+    value: 'git'
   VCS_URL:
-    value: ""
     description: |
-      VCS URL (clone URL) of project to scan.
+      Repository or clone URL of project to scan.
+    value: 'https://github.com/jshttp/mime-types'
   VCS_REVISION:
-    value: ""
     description: |
-      SHA1 or tag to scan (not branch names, because they can move). If VCS_TYPE is 'git-repo',
-      SHA1 must be unabbreviated, tag names must be prefixed with 'refs/tags/'.
+      SHA1 or tag to scan (do not use branch names as they can move). 
+      If VCS_TYPE is 'git-repo', SHA1 must be unabbreviated.
+      Tag names must be prefixed with 'refs/tags/'.
+    value: 'ef932231c20e716ec27ea159c082322c3c485b66'
   VCS_PATH:
-    value: ""
     description: |
-      Leave this field empty unless one of the following special cases applies: project VCS_TYPE is
-      git-repo - specify path to repo manifest file (e.g. olympia.xml,
-      note VCS_URL must point to a manifest repository)
-      you require sparse checkout - specify repository sub-path to download and scan
-      (e.g. projects/gradle/, note sparse checkout is possible only for VCS_TYPE
-      git, mercurial or subversion)
-  ORT_CONFIG_FILE:
-    value: ""
+      Leave this field empty unless one of the following special cases applies:
+      1) project VCS_TYPE is git-repo - specify path to repo manifest file
+      (e.g. sdk.xml, note vcs-url must point to a manifest repository)
+      2) you require sparse checkout - specify repository sub-path to download and scan
+      (e.g. projects/gradle/, note sparse checkout is possible only for VCS_TYPE git, mercurial or subversion)
+    value: ''
+  ADVISORS:
     description: |
-      Path to repository configuration file relative to the VCS root.
-      By default set to '.ort.yml'.
-  ORT_ALLOW_DYNAMIC_VERSIONS:
-    value: ""
+      Comma-separated list of security vulnerability advisors to use.
+    value: ''
+  ALLOW_DYNAMIC_VERSIONS:
     description: |
       Set to 'true' only if dynamic dependency versions are allowed (note version ranges specified for dependencies may cause unstable results).
       This field applies only to package managers that support lock files, e.g. NPM.
-      By default set to 'false'.
-  DISABLE_SHALLOW_CLONE:
-    value: ""
+    value: 'true'
+  DB_URL:
     description: |
-      If set to 'true', the full history of the project is cloned. This option works only if VCS_TYPE is 'git'.
-      Check this option only if you know that it is required for your scan. By default set to 'false'.
-  FAIL_ON_OUTDATED_NOTICE_FILE:
-    value: "false"
-    description: "If set to 'true', the scan will be considered as failed if generated NOTICE file differs from the one in your repository."
-  NOTICE_FILE:
-    value: ""
+      URL for PostgreSQL database to use to cache scan-results and store file archives.
+    value: ''
+  DB_USERNAME:
     description: |
-      Path to open source attribution document relative to the VCS root.
-      By default set to 'FOSS_NOTICE'.
+      Username for PostgreSQL database to use to cache scan-results and store file archives.
+    value: ''
+  DB_PASSWORD:
+    description: |
+      Username for PostgreSQL database to use to cache scan-results and store file archives.
+    value: ''
+  DB_SCHEMA:
+    description: |
+      Schema for PostgreSQL database to use to cache scan-results and store file archives.
+    value: ''
+  FAIL_ON:
+    description: |
+      Comma-separated list of ORT results that if exceeding their severity threshold will fail the action.
+      Accepted values are '', 'issues', 'violations' or 'issues,violations'.
+      If empty, then exceeding severity threshold will not fail the action.
+    value: ''
+  ORT_CLI_ARGS:
+    description: |
+      List of arguments to pass to ORT CLI, applies to all commands.
+    value: ''
+  ORT_CLI_ANALYZE_ARGS:
+    description: |
+      List of arguments to pass to ORT Analyzer CLI.
+    value: ''
+  ORT_CLI_SCAN_ARGS:
+    description: |
+      List of arguments to pass to ORT Scanner CLI.
+    value: ''
+  ORT_CLI_EVALUATE_ARGS:
+    description: |
+      List of arguments to pass to ORT Evaluator CLI.
+    value: ''
+  ORT_CLI_ADVISE_ARGS:
+    description: |
+      List of arguments to pass to ORT Advisor CLI.
+    value: ''
+  ORT_CLI_REPORT_ARGS:
+    description: |
+      List of arguments to pass to ORT Reporter CLI.
+    value: '-O SpdxDocument=output.file.formats=json,yaml'
+  ORT_CONFIG_REPOSITORY:
+    description: |
+      URL to ORT configuration repository to use.
+    value: ''
   ORT_CONFIG_REVISION:
-    value: ""
     description: |
       The Git revision of the ORT configuration repository to use.
-      By default set to 'main'.
-  ORT_DISABLE_ADVISOR:
-    value: ""
+    value: ''
+  ORT_DATA_DIR_NAME:
     description: |
-      If set to 'true', ORT's advisor will not run (no security vulnerability checks).
-      By default set to 'false'.
-  ORT_DISABLE_EVALUATOR:
-    value: ""
-    description: |
-      If set to 'true', ORT's evaluator will not run (no policy checks).
-      By default set to 'true'.
-  ORT_DISABLE_SCANNER:
-    value: ""
-    description: |
-      If set to 'true', ORT's scanner will not run (no copyright holders and licenses scan).
-      By default set to 'false'.
+      Name of ORT directory within user home directory.
+    value: ''
   ORT_LOG_LEVEL:
-    value: ""
     description: |
-      Set value to 'debug' to see additional debug output to help tracking down errors. 
-      By default set to 'warn'.
-  ORT_REVISION:
-    value: ""
+      Set value to 'debug' to see additional debug output to help tracking down errors.
+    value: ''
+  ORT_YML_PATH:
     description: |
-      The Git revision of ORT to use. Can be changed for testing a specific revision of ORT, for
-      example a branch before it is merged.
-      Pull requests can be used by either entering the SHA1 of the commit or by using the PR
-      reference, e.g. 'pull/<pr_id>/head'. Leave empty to use the pre-compiled ORT binary from the
-      Docker image.
-  ORT_USE_DEV_DB:
-    value: "false"
+      Path to file containing the repository configuration.
+      If set, the '.ort.yml' file from the repository is ignored.
+    value: ''
+  REPORT_FORMATS:
     description: |
-      Set to 'true' to download/upload scanned results from/to development database.
-  REBUILD_DOCKER_IMAGE:
-    value: "false"
+      Comma-separated list of ORT reporters to run.
+    value: ''
+  RUN:
     description: |
-      Set value to 'true' in order to rebuild the Docker image.
-  ORT_URL: https://github.com/oss-review-toolkit/ort.git
-  FF_SCRIPT_SECTIONS: "true"
+      Comma-separated list of optional workflow steps to run.
+    value: 'labels,analyzer,scanner,evaluator,advisor,reporter'
+  FF_SCRIPT_SECTIONS: 'true'
 
 
 ort-scan:
+  image: $ORT_DOCKER_IMAGE
   stage: ort-scan
-  image:
-    name: "$ORT_DOCKER_IMAGE"
-    entrypoint: [""]
-  tags:
-    - docker
-  cache:
-    key: "${CI_PROJECT_ID}"
-    paths:
-      - cache/.m2/repository
-      - cache/.go/pkg/mod
-      - cache/pip
-      - cache/.gradle
-      - cache/yarn
-      - cache/node_modules
-      - cache/ivy2/cache
-      - cache/sbt
+  extends: .ort-scan
   variables:
-    ORT_CLI: "/opt/ort/bin/ort"
-
-    ORT_ADVISOR_PROVIDERS: "OSV"
-
-    ORT_CLI_CONFIG_FILE: "${CI_PROJECT_DIR}/config.yml"
-
-    ORT_CONFIG_DIR: "ort-configuration"
-    ORT_CONFIG_COPYRIGHT_GARBAGE_FILE: "${ORT_CONFIG_DIR}/copyright-garbage.yml"
-    ORT_CONFIG_CURATIONS_FILE: "${ORT_CONFIG_DIR}/curations.yml"
-    ORT_CONFIG_CURATIONS_DIR: "${ORT_CONFIG_DIR}/curations"
-    ORT_CONFIG_CUSTOM_LICENSE_TEXTS_DIR: "${ORT_CONFIG_DIR}/custom-license-ids"
-    ORT_CONFIG_LICENSE_CLASSIFICATIONS_FILE: "${ORT_CONFIG_DIR}/license-classifications.yml"
-    ORT_CONFIG_RESOLUTIONS_FILE: "${ORT_CONFIG_DIR}/resolutions.yml"
-    ORT_CONFIG_RULES_FILE: "${ORT_CONFIG_DIR}/evaluator.rules.kts"
-    ORT_CONFIG_PACKAGE_CONFIGURATION_DIR: "${ORT_CONFIG_DIR}/package-configurations"
-    ORT_CONFIG_PACKAGE_CONFIGURATION_FILE: "${ORT_CONFIG_DIR}/packages.yml"
-    ORT_CONFIG_NOTICE_TEMPLATE_PATHS: "${ORT_CONFIG_DIR}/notice/summary.ftl,${ORT_CONFIG_DIR}/notice/by-package.ftl"
-
-    ORT_DATA_DIR: ".ort"
-
-    ORT_DOCKER_IMAGE: "${CI_REGISTRY_IMAGE}/ort-custom:latest"
-
-    ORT_ENABLE_REPOSITORY_PACKAGE_CURATIONS: "false"
-    ORT_ENABLE_REPOSITORY_PACKAGE_CONFIGURATIONS: "false"
-
-    ORT_HOW_TO_FIX_TEXT_PROVIDER_FILE: "${ORT_CONFIG_DIR}/how-to-fix-text-provider.kts"
-
-    ORT_REPORT_FORMATS: "CycloneDx,EvaluatedModel,GitLabLicenseModel,NoticeTemplate,SpdxDocument,StaticHtml,WebApp"
-
-    PROJECT_DIR: "project"
-
-    ORT_RESULTS_DIR: "ort-results"
-    ORT_RESULTS_ADVISOR_FILE: "${ORT_RESULTS_DIR}/advisor-result.json"
-    ORT_RESULTS_ANALYZER_FILE: "${ORT_RESULTS_DIR}/analyzer-result.json"
-    ORT_RESULTS_CYCLONE_DX_FILE: "${ORT_RESULTS_DIR}/cyclone-dx-report.xml"
-    ORT_RESULTS_EVALUATED_MODEL_FILE: "${ORT_RESULTS_DIR}/evaluated-model.json"
-    ORT_RESULTS_EVALUATOR_FILE: "${ORT_RESULTS_DIR}/evaluation-result.json"
-    ORT_RESULTS_GITLAB_LICENSE_MODEL_FILE: "${ORT_RESULTS_DIR}/gl-license-scanning-report.json"
-    ORT_RESULTS_HTML_REPORT_FILE: "${ORT_RESULTS_DIR}/ort-results/scan-report.html"
-    ORT_RESULTS_NOTICE_SUMMARY_FILE: "${ORT_RESULTS_DIR}/NOTICE_summary"
-    ORT_RESULTS_SCANNER_FILE: "${ORT_RESULTS_DIR}/analyzer-result.json"
-    ORT_RESULTS_WEB_APP_FILE: "${ORT_RESULTS_DIR}/scan-report-web-app.html"
-
-    ORT_SCANCODE_CLI_PARAMS: "--copyright --license --info --strip-root --timeout 300"
-    ORT_SCANCODE_PARSE_LICENSE_EXPRESSIONS: "true"
-    ORT_SCANCODE_MAX_VERSION: "30.2.0"
-    ORT_SCANCODE_MIN_VERSION: "3.2.1-rc2"
-
-    ORT_SEVERE_ISSUE_THRESHOLD: "ERROR"
-    ORT_SEVERE_RULE_VIOLATION_THRESHOLD: "ERROR"
-
-    ORT_STORAGE_READERS: ""
-    ORT_STORAGE_WRITERS: ""
-
-    # GitLab will not cache things (see https://gitlab.com/gitlab-org/gitlab-ce/issues/4431) outside the build's working
-    # directory (e.g., /builds/{user}/geometry), but luckily we can move Maven repository around.
-    MAVEN_REPO_LOCAL: "${CI_PROJECT_DIR}/cache/.m2/repository"
-    GO_CACHE_LOCAL: "${CI_PROJECT_DIR}/cache/.go/pkg/mod"
-    PIP_CACHE_DIR: "${CI_PROJECT_DIR}/cache/pip"
-    GRADLE_USER_HOME: "${CI_PROJECT_DIR}/cache/.gradle"
-    YARN_CACHE_FOLDER: "${CI_PROJECT_DIR}/cache/yarn"
-    NODE_PATH: "${CI_PROJECT_DIR}/cache/node_modules"
-    SBT_OPTS: "-Dsbt.global.base=${CI_PROJECT_DIR}/cache/sbt -Dsbt.ivy.home=${CI_PROJECT_DIR}/cache/ivy2 -Divy.home=${CI_PROJECT_DIR}/cache/ivy2"
-
+    ORT_DOCKER_IMAGE: 'ghcr.io/alliander-opensource/ort-container:latest'
   before_script:
-    - export JOB_STARTED_AT=$(date +"%Y-%m-%dT%H:%M:%S%z")
-    - echo "export JOB_STARTED_AT='$JOB_STARTED_AT'" >> vars.env
-
-    # GITLAB_USER_NAME is UPPERCASED in order to unmask it in GitLab logs
-    - export TRIGGERER=${UPSTREAM_PIPELINE_URL:-"${GITLAB_USER_NAME^^} manually"}
-    - echo "Started by $TRIGGERER"
-
-    # Set default values for environment variables
-    - source ./scripts/set-defaults.sh
-
-    - export ORT_VERSION=$($ORT_CLI --version)
-    - echo "export ORT_VERSION='$ORT_VERSION'" >> vars.env
-
-    - ./scripts/check-vars.sh
-
-    # Create ~/.ssh dir with SSH keys if SSH_KEY_1_HOST is set.
-    - |
-      if [[ ! -z "$SSH_KEY_1_HOST" ]]; then
-        ./scripts/setup-ssh.sh
-      fi
-
-    - ./scripts/setup-ort-cli-config.sh
-
-    # Create ~/.netrc file if NETRC_URL is set.
-    - |
-      if [[ ! -z "$NETRC_URL" ]]; then
-        ./scripts/setup-netrc.sh
-      fi
-
-     # Create ~/.ivy2/.credentials file if IVY_CREDS_URL is set.
-    - |
-      if [[ ! -z "$IVY_CREDS_URL" ]]; then
-        ./scripts/setup-ivy-credentials.sh
-      fi
-
-    # Workaround for maven cache.
-    - |
-      if [[ -d "$MAVEN_REPO_LOCAL" ]]; then
-        mkdir -p ${HOME}/.m2/repository/
-        mv ${MAVEN_REPO_LOCAL}/* ${HOME}/.m2/repository/
-      fi
-
-    # Workaround for go cache.
-    - |
-      if [[ -d "$GO_CACHE_LOCAL" ]]; then
-        mkdir -p ${GOPATH}/pkg/mod
-        mv ${GO_CACHE_LOCAL}/* ${GOPATH}/pkg/mod/
-      fi
-
-    - |
-      if [[ ! -z "$ORT_REVISION" ]]; then
-        ./scripts/setup-ort.sh
-        export ORT_CLI="$CI_PROJECT_DIR/bin/ort"
-        export ORTH="$CI_PROJECT_DIR/bin/orth"
-      fi
-
-    # Set up configuration repository which holds ORT configuration files
-    # such as curations.yml, rules.kts, etc.
-    - |
-      mkdir -p $ORT_CONFIG_DIR && cd $ORT_CONFIG_DIR
-      git init -q
-      git remote add origin $ORT_CONFIG_REPO_URL
-      ORT_CONFIG_REVISION=${ORT_CONFIG_REVISION:-$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')}
-      git fetch -q --depth 1 origin $ORT_CONFIG_REVISION
-      git checkout -q FETCH_HEAD
-      ORT_CONFIG_REVISION=$(git rev-parse HEAD)
-      cd ..
-    - echo "export ORT_CONFIG_REVISION='$ORT_CONFIG_REVISION'" >> vars.env
-
-    # Execute ORT's Downloader to fetch the source code for the project to be scanned.
-    - ./scripts/ort-downloader.sh || { [ $? -eq 1 ] && exit 1; }
-
-    - echo "[DEBUG] env vars"; env
-  script:
-    # Executes ORT's Analyzer to determines the dependencies of projects and their metadata,
-    # abstracting which package managers or build systems are actually being used.
-    - ./scripts/ort-step-wrapper.sh analyzer
-
-   # Executes ORT's Scanner which uses configured source code scanners to detect license / copyright findings.
-    - |
-      if [[ "$ORT_DISABLE_SCANNER" = "false" ]]; then
-        ./scripts/ort-step-wrapper.sh scanner
-      fi
-
-    # Conditionally execute ORT's Advisor to retrieve security advisories
-    # for used dependencies from configured vulnerability data services.
-    - |
-      if [[ "$ORT_DISABLE_ADVISOR" = "false" ]]; then
-        ./scripts/ort-step-wrapper.sh advisor
-      fi
-
-    # Conditionally execute ORT's Evaluator to evaluate copyright, file, package and license findings
-    # against customizable policy rules.
-    - |
-      if [[ "$ORT_DISABLE_EVALUATOR" = "false" ]]; then
-        ./scripts/ort-step-wrapper.sh evaluator
-      fi
-
-    # Executes ORT's Reporter to presents scan results in various formats (defined by ORT_REPORT_FORMATS) such as visual reports,
-    # Open Source notices or Bill-Of-Materials (BOMs) to easily identify dependencies, licenses, copyrights or policy rule violations.
-    - ./scripts/ort-step-wrapper.sh reporter
-
-    # Set NOTICE_FILES_DIFFER boolean based on comparing existing open source notices file against on generated in the scan.
-    - diff --brief $PROJECT_DIR/$NOTICE_FILE $ORT_RESULTS_DIR/$NOTICE_FILE && export NOTICE_FILES_DIFFER='false' || export NOTICE_FILES_DIFFER='true'
-    - echo "export NOTICE_FILES_DIFFER='$NOTICE_FILES_DIFFER'" >> vars.env
-
-    - ./scripts/set-job-result.sh
-
-  after_script:
-    # Read variables from file passed from 'script' as they are not available in 'after_script' by default.
-    - if [[ -f vars.env ]]; then source vars.env; fi
-
-    # Workaround for maven cache.
-    - |
-      if [[ -d "${HOME}/.m2/repository/" ]]; then
-        mkdir -p $MAVEN_REPO_LOCAL
-        mv -f ${HOME}/.m2/repository/* $MAVEN_REPO_LOCAL
-      fi
-
-    # Workaround for go cache.
-    - |
-      if [[ -d "${GOPATH}/pkg/mod/" ]]; then
-        mkdir -p ${GO_CACHE_LOCAL}
-        mv ${GOPATH}/pkg/mod/* ${GO_CACHE_LOCAL}
-      fi
-
-    - export JOB_FINISHED_AT=$(date +"%Y-%m-%dT%H:%M:%S%z")
-
-    # Create metadata.json which can be used to reproduce the scan
-    # or perform more easily audits over multiple scan runs.
-    - ./scripts/print-metadata.sh > metadata.json
-
-    # Compress some of the ort-scan result files to save disk space and reduce file download times.
-    - ./scripts/archive-results.sh
-
-    # If ort-scan is run as part of a merge request add comment with scan results to the merge request.
-    - ./scripts/post-mr-comment.sh
-
+    # Use HTTPS instead of SSH for Git cloning
+    - git config --global url.https://github.com/.insteadOf ssh://git@github.com/
   rules:
-    - if: $CI_PIPELINE_SOURCE == "pipeline" || $CI_PIPELINE_SOURCE == "trigger"
-    - if: $CI_PIPELINE_SOURCE == "web" && $VCS_URL && $VCS_REVISION
+    - if: $CI_PIPELINE_SOURCE == 'pipeline' || $CI_PIPELINE_SOURCE == 'trigger'
+    - if: $CI_PIPELINE_SOURCE == 'web' && $VCS_URL && $VCS_REVISION
   artifacts:
     when: always
     paths:
-      - $ORT_RESULTS_DIR
-      - metadata.json
-
-ort-build-image:
-  stage: build
-  image: docker:20.10.18-git
-  services:
-  - docker:20.10.18-dind
-  variables:
-    DOCKER_BUILDKIT: 1
-    DOCKER_DRIVER: overlay2
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - export ORT_SCANCODE_VERSION=${ORT_SCANCODE_VERSION:-"30.1.0"}
-    - |
-      if [[ -z "$ORT_REVISION" ]]; then
-        echo "Building the vanilla ORT docker image 'ort'..."
-        git clone --depth 1 --shallow-submodules --recurse-submodules $ORT_URL
-        cd ort
-        ORT_REVISION=$(git rev-parse --short HEAD)
-      else
-        echo "Building the ORT docker image 'ort' based on commit ${ORT_REVISION}..."
-        mkdir ort
-        cd ort
-        git config --global init.defaultBranch main
-        git init
-        git remote add origin $ORT_URL
-        git fetch --depth 1 origin $ORT_REVISION
-        git checkout FETCH_HEAD
-        ORT_REVISION=$(git rev-parse --short HEAD)
-      fi
-    - if [[ "$CI_DEFAULT_BRANCH" == "$CI_COMMIT_REF_NAME" ]]; then MAIN_TAG=latest; else MAIN_TAG="$CI_COMMIT_SHORT_SHA"; fi
-    - docker buildx build
-      --cache-from $CI_REGISTRY_IMAGE/ort:latest
-      --tag $CI_REGISTRY_IMAGE/ort:$ORT_REVISION
-      --tag $CI_REGISTRY_IMAGE/ort:$MAIN_TAG
-      --build-arg ORT_VERSION="$ORT_REVISION"
-      --build-arg ORT_URL="$ORT_URL"
-      --build-arg BUILDKIT_INLINE_CACHE=1
-      --build-arg SCANCODE_VERSION="$ORT_SCANCODE_VERSION"
-      -f ./Dockerfile .
-    - docker push $CI_REGISTRY_IMAGE/ort:$ORT_REVISION
-    - docker push $CI_REGISTRY_IMAGE/ort:$MAIN_TAG
-    - cd ..
-    - echo "Building the custom ORT docker image 'ort-custom'..."
-    - docker buildx build
-      --cache-from $CI_REGISTRY_IMAGE/ort-custom:latest
-      --tag $CI_REGISTRY_IMAGE/ort-custom:$ORT_REVISION
-      --tag $CI_REGISTRY_IMAGE/ort-custom:$MAIN_TAG
-      --build-arg ORT_DOCKER_IMAGE="${CI_REGISTRY_IMAGE}/ort:latest"
-      --build-arg BUILDKIT_INLINE_CACHE=1
-      --platform linux/amd64
-      -f ./Dockerfile .
-    - docker push $CI_REGISTRY_IMAGE/ort-custom:$ORT_REVISION
-    - docker push $CI_REGISTRY_IMAGE/ort-custom:$MAIN_TAG
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "web" && $REBUILD_DOCKER_IMAGE == "true"
-    - if: $CI_PIPELINE_SOURCE == "schedule" && $REBUILD_DOCKER_IMAGE == "true"
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: always
-      allow_failure: true
-
-# Deploy ort-scan dashboard to GitLab pages
-pages:
-  stage: deploy
-  image: node:lts
-  tags:
-    - docker
-  script:
-    - cd dashboard
-    - yarn install
-    - yarn build
-    - cd ../
-    - mkdir -p public
-    - cp -r dashboard/build/ public/dashboard/
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "web" && $DEPLOY_PAGES == "true"
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && "$CI_COMMIT_REF_NAME" == "$CI_DEFAULT_BRANCH"
-      changes:
-      - dashboard/**/*
-  artifacts:
-    paths:
-      - public
+      - $ORT_RESULTS_PATH
+      - vars.env

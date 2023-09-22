@@ -109,8 +109,8 @@
 
       if [ ! -n "${VCS_TYPE+x}" ] && \
         [ ! -n "${VCS_URL+x}" ] && \
-        [ ! -n "${VCS_REVISION}" ] && \
-        [ ! -n "${VCS_PATH}" ]
+        [ ! -n "${VCS_REVISION+x}" ] && \
+        [ ! -n "${VCS_PATH+x}" ]
       then
         # Scan already cloned repository under $CI_PROJECT_DIR:
         export PROJECT_VCS_TYPE="git"

@@ -242,7 +242,9 @@
       else
       echo -e "\e[1;33m Using 'config.yml' from 'ort-config' repository..."
       fi
-    
+      
+      ${ORT_CLI} config --show-active
+
     # Generate labels to be passed as arguments to ORT Analyzer. 
     # Labels can be used track scan related info or execute policy rules for specific product, delivery or organization.
     - |

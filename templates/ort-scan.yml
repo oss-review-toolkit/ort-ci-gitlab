@@ -144,7 +144,7 @@
     - |
       if [[ -z "$(ls -A ${ORT_CONFIG_PATH})" ]];  then
         ORT_CONFIG_VCS_REVISION=${ORT_CONFIG_VCS_REVISION:-$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')}
-        echo -e "\e[1;33m Retrieving ORT config from ${ORT_CONFIG_VCS_URL}... "
+        echo -e "\e[1;33m Retrieving ORT config commit-ish '${ORT_CONFIG_VCS_REVISION}' from ${ORT_CONFIG_VCS_URL}... "
         cd $ORT_CONFIG_PATH
         git init -q
         git remote add origin $ORT_CONFIG_VCS_URL
@@ -158,6 +158,8 @@
         && export ORT_CONFIG_VCS_URL=$(git config remote.origin.url) \
         && export ORT_CONFIG_VCS_REVISION=$(git rev-parse HEAD)      
       cd -
+     
+      echo -e "Using ORT config revision ${ORT_CONFIG_VCS_REVISION}."
 
     # Generate ORT global configuration if not found and PostgreSQL is used.
     - |

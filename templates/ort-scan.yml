@@ -162,6 +162,7 @@
     # Generate ORT global configuration if not found and PostgreSQL is used.
     - |
       if [[ (! -z "${ORT_CONFIG_PATH}/config.yml") && (-n "${POSTGRES_URL}") ]]; then
+      echo -e "\e[1;33m Generating a 'config.yml' with a PostgreSQL storage..."
       cat << EOF > ${ORT_CONFIG_PATH}/config.yml
       ort:
         packageCurationProviders:
@@ -229,6 +230,7 @@
         severeRuleViolationThreshold: "ERROR"
       EOF
       elif [[ ! -z "${ORT_CONFIG_PATH}/config.yml" ]]; then
+      echo -e "\e[1;33m Generating a 'config.yml' without a PostgreSQL storage..."
       cat << EOF > ${ORT_CONFIG_PATH}/config.yml
       ort:
         packageCurationProviders:
@@ -237,6 +239,8 @@
           - type: OrtConfig
             enabled: false
       EOF
+      else
+      echo -e "\e[1;33m Using 'config.yml' from 'ort-config' repository..."
       fi
     
     # Generate labels to be passed as arguments to ORT Analyzer. 

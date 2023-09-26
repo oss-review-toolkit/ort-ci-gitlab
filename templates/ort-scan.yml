@@ -195,12 +195,12 @@
                 password: "${POSTGRES_PASSWORD}"
                 sslmode: "disable"
                 parallelTransactions: 5
-              options:
-                ScanCode:
-                  commandLine: "--copyright --license --info --strip-root --timeout 300"
-                  parseLicenseExpressions: "true"
-                  minVersion: "31.0.0"
-                  maxVersion: "33.0.0"
+          options:
+            ScanCode:
+              commandLine: "--copyright --license --info --strip-root --timeout 300"
+              parseLicenseExpressions: "true"
+              minVersion: "31.0.0"
+              maxVersion: "33.0.0"
           storages:
             postgres:
               connection:

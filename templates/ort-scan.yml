@@ -32,7 +32,7 @@
       - cache/ivy2/cache
       - cache/sbt
   variables:
-    ORT_DOCKER_IMAGE: "ghcr.io/oss-review-toolkit/ort-extended:latest"
+    ORT_DOCKER_IMAGE: "ghcr.io/oss-review-toolkit/ort:latest"
     ORT_RESULTS_PATH: "${CI_PROJECT_DIR}/ort-results"
 
     # GitLab will not cache things (see https://gitlab.com/gitlab-org/gitlab/-/issues/14151) outside the build's working

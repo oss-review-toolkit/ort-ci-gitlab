@@ -306,6 +306,7 @@
     # Run ORT's Analyzer to determine the dependencies used by the project and their metadata.
     - |
       echo -e "\e[1;33m Running ORT Analyzer... "
+      echo -e "CLI_ARGS: ${ORT_CLI_ARGS}"
       ${ORT_CLI} \
       --${ORT_LOG_LEVEL} \
       -P ort.analyzer.allowDynamicVersions=${ORT_ALLOW_DYNAMIC_VERSIONS} \

@@ -167,6 +167,8 @@
       echo -e "\e[1;33m Generating a 'config.yml' with a PostgreSQL storage..."
       cat << EOF > ${ORT_CONFIG_PATH}/config.yml
       ort:
+        enableRepositoryPackageConfigurations: true
+        enableRepositoryPackageCurations: true
         packageCurationProviders:
           - type: DefaultFile
           - type: DefaultDir

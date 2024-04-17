@@ -1,4 +1,4 @@
-# GitLab Pipeline for ORT
+# GitLab Job Template for ORT
 
 Run licensing, security and best practices checks and generate reports/SBOMs using [ORT][ort].
 

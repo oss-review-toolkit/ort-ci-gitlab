@@ -1,5 +1,7 @@
 # See https://git-scm.com/docs/gitignore for more about ignoring files.
 
+.idea/
+
 # dependencies
 node_modules/
 

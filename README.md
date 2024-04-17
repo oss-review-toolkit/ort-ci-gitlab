@@ -89,7 +89,7 @@ ort-scan:
     VCS_URL: 'ssh://git@github.com:jshttp/mime-types.git'
     VCS_REVISION: 'ef932231c20e716ec27ea159c082322c3c485b66'
     ALLOW_DYNAMIC_VERSIONS: 'true'
-    ORT_CLI_ANALYZE_ARGS: '-P ort.analyzer.enabledPackageManagers=NPM,Yarn,Yarn2'
+    ORT_CLI_ARGS: '-P ort.analyzer.enabledPackageManagers=NPM,Yarn,Yarn2 -P ort.forceOverwrite=true --stacktrace'
   before_script:
     # Use HTTPS instead of SSH for Git cloning
     - git config --global url.https://github.com/.insteadOf ssh://git@github.com/

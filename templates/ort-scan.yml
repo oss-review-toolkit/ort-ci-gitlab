@@ -80,6 +80,7 @@
       export ORT_ALLOW_DYNAMIC_VERSIONS=${ALLOW_DYNAMIC_VERSIONS:-"false"}
       export ORT_CLI="/opt/ort/bin/ort"
       export ORT_CLI_ARGS=${ORT_CLI_ARGS:-"-P ort.forceOverwrite=true --stacktrace"}
+      export ORT_CLI_REPORT_ARGS=${ORT_CLI_REPORT_ARGS:-"-O SpdxDocument=output.file.formats=json,yaml"}
       export ORT_CONFIG_PATH=${ORT_CONFIG_PATH:-"${ORT_DATA_PATH}/config"}
       export ORT_CONFIG_VCS_REVISION=${ORT_CONFIG_REVISION:-"main"}
       export ORT_CONFIG_VCS_URL=${ORT_CONFIG_REPOSITORY:-"https://github.com/oss-review-toolkit/ort-config.git"}

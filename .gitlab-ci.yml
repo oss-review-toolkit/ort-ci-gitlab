@@ -110,7 +110,7 @@ variables:
   ORT_CLI_REPORT_ARGS:
     description: |
       List of arguments to pass to ORT Reporter CLI.
-    value: '-O SpdxDocument=output.file.formats=json,yaml'
+    value: ''
   ORT_CONFIG_REPOSITORY:
     description: |
       URL to ORT configuration repository to use.

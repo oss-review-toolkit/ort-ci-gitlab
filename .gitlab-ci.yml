@@ -27,12 +27,12 @@ variables:
     description: |
       Name of project, product or component to be scanned.
       By default the name of the repository is used as shown in its clone URL.
-    value: 'Mime Types'
+    value: ''
   SW_VERSION:
     description: |
       Project version number or release name (use the version from package metadata, not VCS revision).
       By default, the Git short SHA is used.
-    value: '2.1.35'
+    value: ''
   VCS_TYPE:
     description: |
       Type of version control system.
@@ -41,13 +41,13 @@ variables:
   VCS_URL:
     description: |
       Repository or clone URL of project to scan.
-    value: 'https://github.com/jshttp/mime-types'
+    value: ''
   VCS_REVISION:
     description: |
       SHA1 or tag to scan (do not use branch names as they can move). 
       If VCS_TYPE is 'git-repo', SHA1 must be unabbreviated.
       Tag names must be prefixed with 'refs/tags/'.
-    value: 'ef932231c20e716ec27ea159c082322c3c485b66'
+    value: ''
   VCS_PATH:
     description: |
       Leave this field empty unless one of the following special cases applies:

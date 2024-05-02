@@ -69,7 +69,7 @@ ort-scan:
 - [Run ORT with a custom global configuration](#Run-ORT-with-a-custom-global-configuration)
 - [Run ORT with a custom Docker image](#Run-ORT-with-a-custom-Docker-image)
 - [Run ORT with PostgreSQL database](#Run-ORT-with-PostgreSQL-database)
-- [Run only parts of the GitLab Pipeline for ORT](#Run-only-parts-of-the-GitLab-Pipeline-for-ORT)
+- [Run only parts of the GitLab Job Template for ORT](#Run-only-parts-of-the-GitLab-Job-Template-for-ORT)
 
 #### Run ORT and analyze only specified package managers
 
@@ -348,7 +348,7 @@ ort-scan:
       - $ORT_RESULTS_PATH
 ```
 
-### Run only parts of the GitLab Pipeline for ORT
+### Run only parts of the GitLab Job Template for ORT
 
 ```yaml
 include:

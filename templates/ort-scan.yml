@@ -290,7 +290,7 @@
         echo -e "\e[1;33m Not running ORT Downloader, as the already cloned sources are to be analyzed..."
       else
         echo -e "\e[1;33m Running ORT Downloader to download project to scan... "
-        echo -e "\e[1;33m ${PROJECT_VCS_TYPE} project revision ${PROJECT_VCS_REVISION} located at ${PROJECT_VCS_URL}... "
+        echo -e "\e[1;33m ${PROJECT_VCS_TYPE} project revision ${PROJECT_VCS_REVISION} located at ${PROJECT_VCS_URL} in path '${PROJECT_VCS_PATH}'... "
 
         ${ORT_CLI} \
         --${ORT_LOG_LEVEL} \
@@ -300,6 +300,7 @@
         --vcs-type "${PROJECT_VCS_TYPE}" \
         --project-url "${PROJECT_VCS_URL}" \
         --vcs-revision "${PROJECT_VCS_REVISION}" \
+        --vcs-path "${PROJECT_VCS_PATH}" \
         --project-name "${SW_NAME_SAFE}" \
           || ORT_CLI_DOWNLOAD_EXIT_CODE=$? \
           && export ORT_CLI_DOWNLOAD_EXIT_CODE="${ORT_CLI_DOWNLOAD_EXIT_CODE:-0}"

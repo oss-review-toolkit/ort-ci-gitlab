@@ -71,7 +71,7 @@
     - echo -e "\e[1;33m Initializing ORT in GitLab... "
 
     # Setting default values for various variables.
-    - |  
+    - |
       export ORT_DATA_PATH=${HOME}/${ORT_DATA_DIR_NAME:-".ort"}
       export DISABLE_SHALLOW_CLONE=${DISABLE_SHALLOW_CLONE:-"false"}
       export FAIL_ON_OUTDATED_NOTICE_FILE=${FAIL_ON_OUTDATED_NOTICE_FILE:-"false"}
@@ -104,10 +104,10 @@
       export ORT_RESULTS_WEB_APP_PATH="${ORT_RESULTS_PATH}/scan-report-web-app.html"
       export ORT_RUN_COMMANDS=${RUN:-"labels,analyzer,evaluator,advisor,reporter"}
       export ORT_VERSION=$(ort --version)
-      export POSTGRES_PASSWORD=${POSTGRES_PASSWORD-:$DB_PASSWORD}
-      export POSTGRES_SCHEMA=${POSTGRES_SCHEMA-:$DB_SCHEMA}
-      export POSTGRES_URL=${POSTGRES_URL-:$DB_URL}
-      export POSTGRES_USERNAME=${POSTGRES_USERNAME-:$DB_USERNAME}
+      export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-$DB_PASSWORD}
+      export POSTGRES_SCHEMA=${POSTGRES_SCHEMA:-$DB_SCHEMA}
+      export POSTGRES_URL=${POSTGRES_URL:-$DB_URL}
+      export POSTGRES_USERNAME=${POSTGRES_USERNAME:-$DB_USERNAME}
 
       if [ ! -n "${VCS_TYPE+x}" ] && \
         [ ! -n "${VCS_URL+x}" ] && \
@@ -127,7 +127,7 @@
         export PROJECT_VCS_REVISION=${VCS_REVISION:-""}
         export PROJECT_VCS_PATH=${VCS_PATH:-""}
         export PROJECT_PATH="${HOME}/project"
-      fi  
+      fi
 
       export PROJECT_VCS_REPOSITORY_NAME=$(echo $PROJECT_VCS_URL | sed -E 's/.*\/(.*)\.git/\1/')
       export SW_NAME=${SW_NAME:-"$PROJECT_VCS_REPOSITORY_NAME"}
@@ -158,9 +158,9 @@
       cd $ORT_CONFIG_PATH
       [[ -d "${ORT_CONFIG_PATH}/.git" ]] \
         && export ORT_CONFIG_VCS_URL=$(git config remote.origin.url) \
-        && export ORT_CONFIG_VCS_REVISION=$(git rev-parse HEAD)      
+        && export ORT_CONFIG_VCS_REVISION=$(git rev-parse HEAD)
       cd -
-     
+
       echo -e "Using ORT config revision ${ORT_CONFIG_VCS_REVISION}."
 
     # Generate ORT global configuration if not found and PostgreSQL is used.
@@ -250,10 +250,10 @@
       else
       echo -e "\e[1;33m Using 'config.yml' from 'ort-config' repository..."
       fi
-      
+
       ${ORT_CLI} config --show-active
 
-    # Generate labels to be passed as arguments to ORT Analyzer. 
+    # Generate labels to be passed as arguments to ORT Analyzer.
     # Labels can be used track scan related info or execute policy rules for specific product, delivery or organization.
     - |
       if [[ ${ORT_RUN_COMMANDS} == *"labels"* ]]; then
@@ -280,7 +280,7 @@
       elif [[ ! -z "${ORT_YML_PATH}" ]]; then
         echo -e "\e[1;31m File ${ORT_YML_PATH} not found!."
       fi
-    
+
     - |
       export ORT_CLI_ANALYZE_ARGS ORT_CLI_EVALUATE_ARGS ORT_CLI_REPORT_ARGS
 
@@ -304,12 +304,12 @@
         --project-name "${SW_NAME_SAFE}" \
           || ORT_CLI_DOWNLOAD_EXIT_CODE=$? \
           && export ORT_CLI_DOWNLOAD_EXIT_CODE="${ORT_CLI_DOWNLOAD_EXIT_CODE:-0}"
-        
+
         [[ ${ORT_CLI_DOWNLOAD_EXIT_CODE} -eq 1 ]] \
           && echo -e "\e[1;31m Unable to retrieve project sources from ${VCS_URL}." \
           && exit 1
       fi
-  
+
     # Run ORT's Analyzer to determine the dependencies used by the project and their metadata.
     - |
       echo -e "\e[1;33m Running ORT Analyzer... "
@@ -329,7 +329,7 @@
       [[ -f ${ORT_RESULTS_ANALYZER_PATH} ]] \
         && ln -frs $ORT_RESULTS_ANALYZER_PATH $ORT_RESULTS_CURRENT_PATH \
         || echo -e "\e[1;31m File $ORT_RESULTS_ANALYZER_PATH not found."
-      
+
       [[ ${ORT_CLI_ANALYZE_EXIT_CODE} -eq 1 ]] && exit 1
 
     # Run ORT's Scanner to use configured source code scanners to detect license and copyright findings.
@@ -427,8 +427,8 @@
 
         [[ ${ORT_CLI_REPORT_CODE} -eq 1 ]] && exit 1
       fi
-    
-    # Remove job internal use only current-result.json from scan results directory 
+
+    # Remove job internal use only current-result.json from scan results directory
     - |
       [[ -f ${ORT_RESULTS_CURRENT_PATH} ]] \
         && rm $ORT_RESULTS_CURRENT_PATH \

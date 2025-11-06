@@ -1,6 +1,7 @@
 # GitLab Job Template for ORT
 
-Run licensing, security and best practices checks and generate reports/SBOMs using [ORT][ort].
+Run licensing, security, best practices checks and generate reports/Software Bill of Materials (SBOMs) using [ORT][ort]
+within [GitLab pipelines][gitlab-pipelines-docs].
 
 ## Usage
 
@@ -396,6 +397,7 @@ OSS Review Toolkit (ORT) is a [Linux Foundation project][lf] and part of [ACT][a
 
 [act]: https://automatecompliance.org/
 [gitlab-define-variable]: https://docs.gitlab.com/ee/ci/variables/#define-a-cicd-variable-in-the-ui
+[gitlab-pipelines-docs]: https://docs.gitlab.com/ci/pipelines/
 [ort]: https://github.com/oss-review-toolkit/ort
 [ort-config-yml]: https://github.com/oss-review-toolkit/ort/blob/main/model/src/main/resources/reference.yml
 [ort-contributing-md]: https://github.com/oss-review-toolkit/.github/blob/main/CONTRIBUTING.md

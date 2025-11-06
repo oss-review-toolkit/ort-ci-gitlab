@@ -138,7 +138,7 @@ Set `FAIL_ON` to fail the pipeline if:
 - policy violations reported by Evaluator exceed the `severeRuleViolationThreshold` level.
 - security issues reported by the Advisor exceed the `severeIssueThreshold` level.
 
-By default `severeRuleViolationThreshold` and `severeIssueThreshold` are set to `WARNING` 
+By default `severeRuleViolationThreshold` and `severeIssueThreshold` are set to `WARNING`
 but you can change this to for example `ERROR` in your [config.yml][ort-config-yml].
 
 ```yaml
@@ -228,7 +228,7 @@ ort-scan:
     ALLOW_DYNAMIC_VERSIONS: 'true'
     ORT_CONFIG_REPOSITORY: "https://oauth2:${EXAMPLE_ORG_AUTH_TOKEN}@git.example.com/ort-project/ort-config.git"
   before_script:
-    # Set network proxy server environment variables 
+    # Set network proxy server environment variables
     - |
       export https_proxy='http://proxy.example.com:3128/'
       export http_proxy='http://proxy.example.com:3128/'
@@ -249,7 +249,7 @@ ort-scan:
 Use `ORT_CONFIG_REPOSITORY` to specify the location of your ORT global configuration repository.
 If `ORT_CONFIG_REVISION` is not automatically latest state of configuration repository will be used.
 
-Alternatively, you can also define your ORT global configuration files in `~/.ort/config` 
+Alternatively, you can also define your ORT global configuration files in `~/.ort/config`
 using `before_script` within the `ort-scan` job.
 
 ```yaml

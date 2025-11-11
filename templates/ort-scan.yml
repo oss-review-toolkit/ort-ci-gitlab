@@ -277,7 +277,7 @@
         ORT_CLI_ANALYZE_ARGS="--repository-configuration-file ${ORT_YML_PATH} ${ORT_CLI_ANALYZE_ARGS}"
         ORT_CLI_EVALUATE_ARGS="--repository-configuration-file ${ORT_YML_PATH} ${ORT_CLI_EVALUATE_ARGS}"
         ORT_CLI_REPORT_ARGS="--repository-configuration-file ${ORT_YML_PATH} ${ORT_CLI_REPORT_ARGS}"
-      elif [[ ! -z "${ORT_YML_PATH}" ]]; then
+      elif [[ ! -a "${ORT_YML_PATH}" ]]; then
         echo -e "\e[1;31m File ${ORT_YML_PATH} not found!."
       fi
 
